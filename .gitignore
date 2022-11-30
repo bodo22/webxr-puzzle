@@ -1,5 +1,7 @@
 # dependencies
 /node_modules
+.yarn/*
+!.yarn/releases
 
 # testing
 /coverage
