@@ -5654,6 +5654,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"next-dev-https@npm:^0.1.1":
+  version: 0.1.1
+  resolution: "next-dev-https@npm:0.1.1"
+  dependencies:
+    arg: ^5.0.2
+    qrcode-terminal: ^0.12.0
+    selfsigned: ^2.1.1
+  peerDependencies:
+    next: ">=12.0.0"
+    react: ">=16.0.0"
+  bin:
+    next-dev-https: bin.js
+  checksum: 92614f90f12d36dc81dcd844ac6f6cec8db20874ba9e697f100148811b4c1dd4db89f18806c0a28c5fee5752348e43bc5376b62301ccc36470831c5c3f9a95fe
+  languageName: node
+  linkType: hard
+
 "next-pwa@npm:^5.6.0":
   version: 5.6.0
   resolution: "next-pwa@npm:5.6.0"
@@ -5742,6 +5758,13 @@ __metadata:
   version: 1.0.5
   resolution: "nice-try@npm:1.0.5"
   checksum: 0b4af3b5bb5d86c289f7a026303d192a7eb4417231fe47245c460baeabae7277bcd8fd9c728fb6bd62c30b3e15cd6620373e2cf33353b095d8b403d3e8a15aff
+  languageName: node
+  linkType: hard
+
+"node-forge@npm:^1":
+  version: 1.3.1
+  resolution: "node-forge@npm:1.3.1"
+  checksum: 08fb072d3d670599c89a1704b3e9c649ff1b998256737f0e06fbd1a5bf41cae4457ccaee32d95052d80bbafd9ffe01284e078c8071f0267dc9744e51c5ed42a9
   languageName: node
   linkType: hard
 
@@ -6345,6 +6368,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"qrcode-terminal@npm:^0.12.0":
+  version: 0.12.0
+  resolution: "qrcode-terminal@npm:0.12.0"
+  bin:
+    qrcode-terminal: ./bin/qrcode-terminal.js
+  checksum: 51638d11d080e06ef79ef2d5cfe911202159e48d2873d6a80a3c5489b4b767acf4754811ceba4e113db8f41f61a06c163bcb17e6e18e6b34e04a7a5155dac974
+  languageName: node
+  linkType: hard
+
 "queue-microtask@npm:^1.2.2":
   version: 1.2.3
   resolution: "queue-microtask@npm:1.2.3"
@@ -6857,6 +6889,15 @@ __metadata:
     ajv: ^6.12.5
     ajv-keywords: ^3.5.2
   checksum: fb73f3d759d43ba033c877628fe9751620a26879f6301d3dbeeb48cf2a65baec5cdf99da65d1bf3b4ff5444b2e59cbe4f81c2456b5e0d2ba7d7fd4aed5da29ce
+  languageName: node
+  linkType: hard
+
+"selfsigned@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "selfsigned@npm:2.1.1"
+  dependencies:
+    node-forge: ^1
+  checksum: aa9ce2150a54838978d5c0aee54d7ebe77649a32e4e690eb91775f71fdff773874a4fbafd0ac73d8ec3b702ff8a395c604df4f8e8868528f36fd6c15076fb43a
   languageName: node
   linkType: hard
 
@@ -7941,6 +7982,7 @@ __metadata:
     glslify: ^7.1.1
     glslify-loader: ^2.0.0
     next: ^13.0.5
+    next-dev-https: ^0.1.1
     next-pwa: ^5.6.0
     postcss: ^8.4.19
     prettier: ^2.8.0
