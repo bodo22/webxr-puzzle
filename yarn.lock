@@ -1773,6 +1773,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@react-three/xr@npm:^5.1.0":
+  version: 5.1.0
+  resolution: "@react-three/xr@npm:5.1.0"
+  dependencies:
+    three-stdlib: ^2.12.1
+    zustand: ^3.7.1
+  peerDependencies:
+    "@react-three/fiber": ">=8.0.0"
+    react: ">=18.0"
+    three: ">=0.141"
+  checksum: 8b61c3e0fba7724a0d5ff3a7e1a1a67f2c4bc39542de5c2a7b282f968adbd2d8e6de394c38fc3d6a82a2476c1d13645dc5dc0e034a9216ae3c0e978a6c542c3e
+  languageName: node
+  linkType: hard
+
 "@rollup/plugin-babel@npm:^5.2.0":
   version: 5.3.1
   resolution: "@rollup/plugin-babel@npm:5.3.1"
@@ -7502,7 +7516,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"three-stdlib@npm:^2.18.1, three-stdlib@npm:^2.19.0":
+"three-stdlib@npm:^2.12.1, three-stdlib@npm:^2.18.1, three-stdlib@npm:^2.19.0":
   version: 2.19.0
   resolution: "three-stdlib@npm:2.19.0"
   dependencies:
@@ -7916,6 +7930,7 @@ __metadata:
     "@next/bundle-analyzer": ^13.0.5
     "@react-three/drei": ^9.45.1
     "@react-three/fiber": ^8.9.1
+    "@react-three/xr": ^5.1.0
     autoprefixer: ^10.4.13
     eslint: ^8.28.0
     eslint-config-next: ^13.0.5

@@ -23,7 +23,7 @@ export default function Header({ title = titleDefault }) {
         name='keywords'
         content='Software Engineer,Product Manager,Project Manager,Data Scientist,Computer Scientist'
       />
-      <meta name='robots' content='index,follow' />
+      <meta name='robots' content='noindex,nofollow' />
       <meta name='distribution' content='web' />
       {/* 
       Facebook Open Graph meta tags
