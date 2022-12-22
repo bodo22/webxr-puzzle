@@ -3,7 +3,7 @@ import * as THREE from 'three'
 import create from 'zustand'
 import { useThree } from '@react-three/fiber'
 
-const colors = { red: 0xff0000, 0: 0xff0000, blue: 0x0000ff, 1: 0x0000ff }
+const colors = { red: 'red', 0: 'red', blue: 'blue', 1: 'blue' }
 class FakeXRController extends THREE.Group {
   constructor(index, gl) {
     super()
@@ -27,13 +27,13 @@ class FakeXRController extends THREE.Group {
   }
 
   _addedCallback(e) {
-    console.log(`%c added ${this.index}, trace:`, this.color)
+    console.log(`%c added ${this.index}, trace:`, `color: ${colors[this.index]}`)
     // console.log(this.parent)
     console.trace()
   }
 
   _removedCallback(e) {
-    console.log(`%c removed ${this.index}, trace:`, this.color)
+    console.log(`%c removed ${this.index}, trace:`, `color: ${colors[this.index]}`)
     // console.log(this.parent)
     console.trace()
   }
@@ -59,7 +59,7 @@ export default function BuggyMinimalXR({ children }) {
   const controllers = store((state) => state.controllers)
 
   React.useLayoutEffect(() => {
-    ;[0, 1].forEach((id) => {
+    ;['red', 'blue'].forEach((id) => {
       const target = new FakeXRController(id, gl)
       set((state) => {
         return { controllers: [...state.controllers, target] }
