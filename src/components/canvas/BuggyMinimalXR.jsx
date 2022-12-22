@@ -95,7 +95,7 @@ export default function BuggyMinimalXR({ children }) {
   return (
     <>
       {controllers.map((controller, i) => (
-        <primitive key={controller.index} object={controller} />
+        <primitive key={i} object={controller} />
       ))}
       {children}
     </>
