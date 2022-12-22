@@ -23,7 +23,7 @@
   "dependencies": {
     "@react-three/drei": "^9.45.1",
     "@react-three/fiber": "^8.9.1",
-    "@react-three/xr": "^5.1.0",
+    "@react-three/xr": "^5.1.2",
     "glsl-random": "^0.0.5",
     "next": "^13.0.5",
     "next-dev-https": "^0.1.1",
