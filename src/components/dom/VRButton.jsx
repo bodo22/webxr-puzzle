@@ -27,8 +27,10 @@ class VRButton {
       button.style.display = ''
 
       button.style.cursor = 'pointer'
-      button.style.left = 'calc(50% - 50px)'
-      button.style.width = '100px'
+      button.style.left = '5vw'
+      button.style.bottom = '5vh'
+      button.style.width = '90vw'
+      button.style.height = '90vh'
 
       button.textContent = 'ENTER VR'
 
