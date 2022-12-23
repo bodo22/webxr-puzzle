@@ -18,7 +18,7 @@ export default function Scene({ children, ...props }) {
         <ambientLight intensity={0.75} />
         {children}
         <Preload all />
-        {/* <OrbitControls /> */}
+        <OrbitControls />
       </XR>
     </Canvas>
   )
