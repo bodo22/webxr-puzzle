@@ -42,6 +42,21 @@ const nextConfig = {
       use: ['raw-loader', 'glslify-loader'],
     })
 
+    config.snapshot = {
+      ...(config.snapshot ?? {}),
+      // Add all node_modules but @next module to managedPaths
+      // Allows for hot refresh of changes to @react-three module
+      // much discussed feature:
+      // - https://github.com/vercel/next.js/discussions/34380
+      // - https://github.com/vercel/next.js/discussions/33929
+      // - https://stackoverflow.com/questions/72290798/webpack-exclude-single-folder-of-node-modules-from-caching
+      // - https://github.com/webpack/webpack/issues/11952
+      // - https://github.com/webpack/webpack/issues/12112
+      // - https://github.com/webpack/webpack/pull/14509
+      // see this comment: https://stackoverflow.com/questions/71345874/should-changes-in-node-modules-invalidate-the-webpack-build-cache#comment131306189_72576675
+      managedPaths: [/^node_modules\/(?!@react-three).*/],
+    }
+
     return config
   },
 }
