@@ -10,9 +10,16 @@ export default function Scene({ children, ...props }) {
   return (
     <Canvas
       {...props}
-      onCreated={({ gl }) => {
+      onCreated={({ gl, xr, ...rest }) => {
         if (router.pathname === '/') {
           document.body.appendChild(CustomVRButton.createButton(gl))
+          // if (gl?.xr?.setAnimationLoop) {
+          //   console.log('setting setAnimationLoop')
+          //   gl.xr.setAnimationLoop((time, frame) => {
+          //     console.log(time, frame)
+          //   })
+          // }
+          // https://github.com/pmndrs/react-three-fiber/blob/master/packages/fiber/src/core/index.tsx#L231
         }
       }}>
       <XR>

@@ -7,11 +7,18 @@
         {
             "type": "chrome",
             "request": "attach",
-            "name": "Launch Chrome against localhost",
+            "name": "Attach to local 9222 port",
             "url": "https://localhost:3000",
             "webRoot": "${workspaceFolder}",
             "urlFilter": "https://localhost:3000/*",
             "port": 9222
+        },
+        {
+            "type": "android-webview",
+            "request": "attach",
+            "name": "Attach to Android WebView",
+            "application": "com.android.chrome",
+            "device": "1WMHHA63U21426"
         }
     ]
 }
