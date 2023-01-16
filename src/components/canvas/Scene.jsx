@@ -2,16 +2,14 @@ import { Canvas } from '@react-three/fiber'
 import { OrbitControls, Preload, Stats } from '@react-three/drei'
 import { XR, Controllers, Hands } from '@react-three/xr'
 import CustomVRButton from '@/components/dom/VRButton'
-import { useRouter } from 'next/router'
 
 export default function Scene({ children, ...props }) {
-  const router = useRouter()
   // Everything defined in here will persist between route changes, only children are swapped
   return (
     <Canvas
       {...props}
       onCreated={({ gl, xr, ...rest }) => {
-        if (router.pathname === '/') {
+        if (window.location.pathname === '/') {
           document.body.appendChild(CustomVRButton.createButton(gl))
           // if (gl?.xr?.setAnimationLoop) {
           //   console.log('setting setAnimationLoop')

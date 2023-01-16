@@ -1,25 +1,12 @@
 import React from 'react'
-import dynamic from 'next/dynamic'
-import Instructions from '@/components/dom/Instructions'
-import { VRButton, useXR } from '@react-three/xr'
+import { useXR } from '@react-three/xr'
 import Logo from '@/components/canvas/Logo'
 import { useFrame, useThree } from '@react-three/fiber'
-// import RemoteControllers from '@/components/canvas/RemoteControllers'
+import RemoteControllers from '@/components/canvas/RemoteControllers'
 
-const RemoteControllers = dynamic(() => import('@/components/canvas/RemoteControllers'), { ssr: false })
 
 // Dom components go here
-export default function Page(props) {
-  return (
-    <>
-      {/* <div>
-        This is a minimal starter for Nextjs + React-three-fiber and Threejs. Click on the{' '}
-        <span className='text-cyan-200'>atoms nucleus</span> to navigate to the{' '}
-        <span className='text-green-200'>/blob</span> page. OrbitControls are enabled by default.
-      </div> */}
-      {/* <VRButton /> */}
-    </>
-  )
+export default function Page() {
 }
 
 const RecordHandData = () => {
@@ -28,7 +15,7 @@ const RecordHandData = () => {
   const scene = useThree((state) => state.scene)
 
   React.useEffect(() => {
-    console.log(scene)
+    // console.log(scene)
   }, [scene])
 
   React.useEffect(() => {
