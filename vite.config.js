@@ -1,16 +1,33 @@
 import http from "http";
 import Cache from "file-system-cache";
+import ipUtil from "ip";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import eslint from "vite-plugin-eslint";
 import jsconfigPaths from "vite-jsconfig-paths";
+const hostname = "local-ip.co";
+const port = 5173;
 
-const url = "http://local-ip.co";
+const addLocalIpLog = () => {
+  return {
+    name: "custom-log",
+    configureServer(server) {
+      const { printUrls } = server;
+      server.printUrls = () => {
+        const ip = ipUtil.address().replaceAll(".", "-");
+        server.resolvedUrls["network"].push(
+          `https://${ip}.my.${hostname}:${port}/`
+        );
+        printUrls();
+      };
+    },
+  };
+};
 
 async function getFile(path) {
   return new Promise((resolve) => {
     let data = "";
-    const uri = url + path;
+    const uri = `http://${hostname}${path}`;
     http.get(uri, (res) => {
       res.on("data", (chunk) => {
         data += chunk;
@@ -29,9 +46,6 @@ const cache = Cache.default({
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => {
-  // const files = await cache.load();
-  // console.log(files);
-
   let cert = await cache.get("cert");
   let key = await cache.get("key");
 
@@ -48,8 +62,9 @@ export default defineConfig(async () => {
   }
 
   return {
-    plugins: [react(), eslint(), jsconfigPaths()],
+    plugins: [react(), eslint(), jsconfigPaths(), addLocalIpLog()],
     server: {
+      port,
       watch: {
         ignored: [
           "!**/node_modules/three/**",
