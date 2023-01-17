@@ -1,58 +1,39 @@
-import React from 'react'
-import { useXR } from '@react-three/xr'
-import Logo from '@/components/canvas/Logo'
-import { useFrame, useThree } from '@react-three/fiber'
-import RemoteControllers from '@/components/canvas/RemoteControllers'
-
+import React from "react";
+import { useXR } from "@react-three/xr";
+import Logo from "@/components/canvas/Logo";
+import { useThree } from "@react-three/fiber";
+import RemoteControllers from "@/components/canvas/remote/RemoteHandsAndControllers";
+import useSocket from "@/stores/socket";
 
 // Dom components go here
-export default function Page() {
-}
+export default function Page() {}
 
 const RecordHandData = () => {
-  const controllers = useXR((state) => state.controllers)
-  const xr = useThree((state) => state.gl.xr)
-  const scene = useThree((state) => state.scene)
+  const controllers = useXR((state) => state.controllers);
+  const xr = useThree((state) => state.gl.xr);
+  const sendHandData = useSocket(({ sendHandData }) => sendHandData);
 
   React.useEffect(() => {
-    // console.log(scene)
-  }, [scene])
-
-  React.useEffect(() => {
-    function onFrameJointPoses(frameJointPoses) {
-      // console.log({ frameJointPoses })
-    }
-
-    controllers.forEach((controller, index) => {
-      // const controller3 = xr.controllers[index]
-      controller.hand.addEventListener('frameJointPoses', onFrameJointPoses)
-    })
+    const handler = ({ data }) => {
+      sendHandData(data);
+    };
+    xr.addEventListener("managedHandsJointData", handler);
     return () => {
-      controllers.forEach((controller) => {
-        controller.hand.removeEventListener('frameJointPoses', onFrameJointPoses)
-      })
-    }
-  }, [controllers, xr])
+      xr.removeEventListener("managedHandsJointData", handler);
+    };
+  }, [controllers, xr, sendHandData]);
+};
 
-  useFrame((gl, ...rest) => {
-    if (rest && rest[1]) {
-      // console.log(gl, rest)
-    }
-  })
-}
-
-// Canvas components go here
-// It will receive same props as the Page component (from getStaticProps, etc.)
 Page.canvas = (props) => {
   return (
     <>
       <RemoteControllers />
       <RecordHandData />
-      <Logo scale={0.5} route='/blob' position-z={-5} />
+      <Logo scale={0.5} route="/blob" position-z={-5} />
     </>
-  )
-}
+  );
+};
 
 export async function getStaticProps() {
-  return { props: { title: 'Puzzle' } }
+  return { props: { title: "Puzzle" } };
 }
