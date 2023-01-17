@@ -1,5 +1,6 @@
 {
-  "extends": ["next", "prettier", "plugin:tailwind/recommended"],
+  "plugins": ["tailwindcss"],
+  "extends": ["prettier", "react-app"],
   "rules": {
     "import/prefer-default-export": "off",
     "no-console": "warn",
