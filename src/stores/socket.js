@@ -21,7 +21,7 @@ const mutations = (set, get) => {
       set({ ready: false });
     })
     .on("handData", (handData) => {
-      // .on("recordedHandData", (handData) => {
+    // .on("recordedHandData", (handData) => {
       get().controllers.forEach((target) => {
         const handedness = target.index ? "right" : "left";
         const fakeInputSource = fakeInputSourceFactory.createFakeInputSource();
