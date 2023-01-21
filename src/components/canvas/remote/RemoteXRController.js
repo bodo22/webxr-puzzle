@@ -13,13 +13,6 @@ export default class XRController extends THREE.Group {
     this.grip.userData.name = 'grip'
     this.controller.userData.name = 'controller'
     this.hand.userData.name = 'hand'
-    const x = 0.05
-    const offset = -0.27
-    this.position.setX(index ? x + offset : -x + offset)
-    // this.position.setZ(4.4)
-    // this.position.setY(-1.8)
-    this.position.setZ(-0.4)
-    this.position.setY(-0.2)
 
     // this.visible = false
     this.add(this.controller, this.grip, this.hand)
