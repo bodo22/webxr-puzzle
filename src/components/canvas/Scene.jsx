@@ -1,7 +1,7 @@
-import { Canvas } from '@react-three/fiber'
-import { OrbitControls, Preload, Stats } from '@react-three/drei'
-import { XR, Controllers, Hands } from '@react-three/xr'
-import CustomVRButton from '@/components/dom/VRButton'
+import { Canvas } from "@react-three/fiber";
+import { OrbitControls, Preload, Stats } from "@react-three/drei";
+import { XR, Controllers, Hands } from "@react-three/xr";
+import CustomVRButton from "@/components/dom/VRButton";
 
 export default function Scene({ children, ...props }) {
   // Everything defined in here will persist between route changes, only children are swapped
@@ -9,8 +9,8 @@ export default function Scene({ children, ...props }) {
     <Canvas
       {...props}
       onCreated={({ gl, xr, ...rest }) => {
-        if (window.location.pathname === '/') {
-          document.body.appendChild(CustomVRButton.createButton(gl))
+        if (window.location.pathname === "/") {
+          document.body.appendChild(CustomVRButton.createButton(gl));
           // if (gl?.xr?.setAnimationLoop) {
           //   console.log('setting setAnimationLoop')
           //   gl.xr.setAnimationLoop((time, frame) => {
@@ -19,8 +19,14 @@ export default function Scene({ children, ...props }) {
           // }
           // https://github.com/pmndrs/react-three-fiber/blob/master/packages/fiber/src/core/index.tsx#L231
         }
-      }}>
-      <XR>
+      }}
+    >
+      <XR
+        // foveation={1}
+        referenceSpace="local"
+        // referenceSpace="viewer"
+        // referenceSpace="unbounded"
+      >
         <Controllers />
         <Hands />
         <directionalLight intensity={0.75} />
@@ -29,7 +35,7 @@ export default function Scene({ children, ...props }) {
         <Preload all />
         <OrbitControls />
       </XR>
-      <Stats showPanel={0} className='stats' {...props} />
+      <Stats showPanel={0} className="stats" {...props} />
     </Canvas>
-  )
+  );
 }
