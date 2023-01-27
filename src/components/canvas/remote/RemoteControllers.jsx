@@ -3,11 +3,9 @@ import * as THREE from "three";
 import { XRControllerModelFactory } from "three-stdlib";
 import { extend, createPortal } from "@react-three/fiber";
 
-import { FakeInputSourceFactory } from "@/utils";
+import { fakeInputSourceFactory } from "@/utils";
 
 const modelFactory = new XRControllerModelFactory();
-const fakeInputSourceFactory = new FakeInputSourceFactory();
-
 class ControllerModel extends THREE.Group {
   constructor(target) {
     super();
@@ -20,23 +18,26 @@ export default function RemoteControllers({ controllers }) {
 
   // Send fake connected event (no-op) so models start loading
   React.useLayoutEffect(() => {
-    for (const target of controllers) {
-      const fakeInputSource = fakeInputSourceFactory.createFakeInputSource(
-        target.index ? "right" : "left"
-      );
-      target.controller.dispatchEvent({
-        type: "connected",
-        data: fakeInputSource,
-        fake: true,
-      });
+    for (const userId in controllers) {
+      for (const target of controllers[userId]) {
+        const fakeInputSource = fakeInputSourceFactory.createFakeInputSource(
+          target.handedness
+        );
+        target.controller.dispatchEvent({
+          type: "connected",
+          data: fakeInputSource,
+          fake: true,
+        });
+      }
     }
   }, [controllers]);
 
   return (
     <>
-      {controllers.map((target, i) => (
-        <React.Fragment key={i}>
-          {createPortal(<controllerModel args={[target]} />, target.grip)}
+      {Object.entries(controllers).map(([userId, [left, right]]) => (
+        <React.Fragment key={`${userId}-controllers`}>
+          {createPortal(<controllerModel args={[left]} />, left.grip)}
+          {createPortal(<controllerModel args={[right]} />, right.grip)}
         </React.Fragment>
       ))}
     </>

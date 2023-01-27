@@ -1,1 +1,1 @@
-export { default as FakeInputSourceFactory } from "./FakeInputSourceFactory";
+export { default as fakeInputSourceFactory } from "./FakeInputSourceFactory";

@@ -57,4 +57,6 @@ class FakeInputSourceFactory {
   }
 }
 
-export default FakeInputSourceFactory
+const factory = new FakeInputSourceFactory();
+
+export default factory;
