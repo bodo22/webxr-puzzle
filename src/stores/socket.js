@@ -1,6 +1,6 @@
 import create from "zustand";
 import { combine, subscribeWithSelector } from "zustand/middleware";
-import io from "socket.io-client";
+import socket from "./socketConnection";
 
 import { fakeInputSourceFactory } from "@/utils";
 
@@ -12,15 +12,7 @@ const initialState = {
   userId: undefined,
 };
 
-const mutations = async (set, get) => {
-  let supported = false;
-  try {
-    supported = await navigator.xr.isSessionSupported("immersive-vr");
-  } catch (err) {}
-  const socket = io(undefined, {
-    query: `isSessionSupported=${supported}`,
-  });
-
+const mutations = (set, get) => {
   socket
     .on("connect", () => {
       set({ ready: true });
