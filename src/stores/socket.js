@@ -12,8 +12,14 @@ const initialState = {
   userId: undefined,
 };
 
-const mutations = (set, get) => {
-  const socket = io();
+const mutations = async (set, get) => {
+  let supported = false;
+  try {
+    supported = await navigator.xr.isSessionSupported("immersive-vr");
+  } catch (err) {}
+  const socket = io(undefined, {
+    query: `isSessionSupported=${supported}`,
+  });
 
   socket
     .on("connect", () => {
