@@ -17,6 +17,10 @@ const RecordHandData = () => {
     const handler = ({ data }) => {
       sendHandData(data);
     };
+    if (controllers.length === 0) {
+      // this removes remote hands instantly, instead of relying on the interval
+      sendHandData({});
+    }
     xr.addEventListener("managedHandsJointData", handler);
     return () => {
       xr.removeEventListener("managedHandsJointData", handler);

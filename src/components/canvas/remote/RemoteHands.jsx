@@ -23,20 +23,12 @@ export default function RemoteHands({ controllers, modelLeft, modelRight }) {
     }
   }, [controllers, modelLeft, modelRight]);
 
-  return (
-    <>
-      {Object.entries(controllers).map(([userId, [left, right]]) => (
-        <React.Fragment key={`${userId}-hands`}>
-          {createPortal(
-            <oculusHandModel args={[left.hand, modelLeft, modelRight]} />,
-            left.hand
-          )}
-          {createPortal(
-            <oculusHandModel args={[right.hand, modelLeft, modelRight]} />,
-            right.hand
-          )}
-        </React.Fragment>
-      ))}
-    </>
+  return Object.values(controllers).map((targets) =>
+    targets.map((target) => {
+      return createPortal(
+        <oculusHandModel args={[target.hand, modelLeft, modelRight]} />,
+        target.hand
+      );
+    })
   );
 }

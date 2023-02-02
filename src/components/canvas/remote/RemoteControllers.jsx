@@ -32,14 +32,9 @@ export default function RemoteControllers({ controllers }) {
     }
   }, [controllers]);
 
-  return (
-    <>
-      {Object.entries(controllers).map(([userId, [left, right]]) => (
-        <React.Fragment key={`${userId}-controllers`}>
-          {createPortal(<controllerModel args={[left]} />, left.grip)}
-          {createPortal(<controllerModel args={[right]} />, right.grip)}
-        </React.Fragment>
-      ))}
-    </>
+  return Object.values(controllers).map((targets) =>
+    targets.map((target) => {
+      return createPortal(<controllerModel args={[target]} />, target.grip);
+    })
   );
 }

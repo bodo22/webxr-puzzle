@@ -10,12 +10,13 @@ export default function RemoteHandsAndControllers() {
 
   return (
     <>
-      {Object.entries(controllers).map(([userId, [left, right]]) => (
-        <React.Fragment key={userId}>
-          <primitive object={left} />
-          <primitive object={right} />
-        </React.Fragment>
-      ))}
+      {Object.entries(controllers).map(([userId, targets]) =>
+        targets.map((target) => {
+          return (
+            <primitive key={`${userId}-${target.handedness}`} object={target} />
+          );
+        })
+      )}
       <RemoteControllers controllers={controllers} />
       <RemoteHands controllers={controllers} />
     </>
