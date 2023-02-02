@@ -9,7 +9,6 @@ import RemoteXRController from "@/components/canvas/remote/RemoteXRController";
 const initialState = {
   ready: false,
   controllers: {},
-  connectedUsers: [],
   userId: undefined,
 };
 
@@ -28,11 +27,6 @@ const mutations = (set, get) => {
     })
     .on("handData", (data) => {
       // .on("recordedHandData", (data) => {
-      if (!get().connectedUsers.find((id) => id === data.userId)) {
-        const newConnectedUsers = [...get().connectedUsers];
-        newConnectedUsers.push(data.userId);
-        set({ connectedUsers: newConnectedUsers });
-      }
       let targets = get().controllers?.[data.userId];
       if (!targets) {
         targets = ["left", "right"].map((handedness) => {
