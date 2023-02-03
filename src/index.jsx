@@ -33,7 +33,7 @@ Page.canvas = (props) => {
     <>
       <RemoteControllers />
       <RecordHandData />
-      <Logo scale={0.5} route="/blob" position-z={-5} />
+      <Logo scale={0.5} position-z={-5} />
     </>
   );
 };
