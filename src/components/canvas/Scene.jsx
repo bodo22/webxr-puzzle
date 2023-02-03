@@ -1,5 +1,10 @@
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Preload, Stats } from "@react-three/drei";
+import {
+  PerspectiveCamera,
+  OrbitControls,
+  Preload,
+  Stats,
+} from "@react-three/drei";
 import { XR, Controllers, Hands } from "@react-three/xr";
 import CustomVRButton from "@/components/dom/VRButton";
 
@@ -27,6 +32,7 @@ export default function Scene({ children, ...props }) {
         // referenceSpace="viewer"
         // referenceSpace="unbounded"
       >
+        <PerspectiveCamera makeDefault position-z={1} />
         <Controllers />
         <Hands />
         <directionalLight intensity={0.75} />
