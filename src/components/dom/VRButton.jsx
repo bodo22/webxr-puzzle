@@ -57,11 +57,11 @@ class VRButton {
               "bounded-floor",
               "hand-tracking",
               "layers",
-              "dom-overlay",
+              // "dom-overlay",
             ],
-            domOverlay: {
-              root: document.getElementById("xr-overlay"),
-            },
+            // domOverlay: {
+            //   root: document.getElementById("xr-overlay"),
+            // },
           };
           navigator.xr
             .requestSession("immersive-vr", sessionInit)

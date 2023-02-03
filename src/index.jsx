@@ -6,7 +6,15 @@ import RemoteControllers from "@/components/canvas/remote/RemoteHandsAndControll
 import useSocket from "@/stores/socket";
 
 // Dom components go here
-export default function Page() {}
+export default function index() {
+  return (
+    <>
+      {/* <div id="xr-overlay">
+      <h1 className="text-gray-50">DOM Overlay TEST!</h1>
+    </div> */}
+    </>
+  );
+}
 
 const RecordHandData = () => {
   const controllers = useXR((state) => state.controllers);
@@ -28,7 +36,7 @@ const RecordHandData = () => {
   }, [controllers, xr, sendHandData]);
 };
 
-Page.canvas = (props) => {
+index.canvas = (props) => {
   return (
     <>
       <RemoteControllers />
