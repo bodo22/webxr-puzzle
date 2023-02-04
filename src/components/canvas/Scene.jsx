@@ -1,9 +1,13 @@
+import React from "react";
 import { Canvas } from "@react-three/fiber";
 import {
   PerspectiveCamera,
   OrbitControls,
   Preload,
   Stats,
+  GizmoHelper,
+  GizmoViewport,
+  Grid,
 } from "@react-three/drei";
 import { XR, Controllers, Hands } from "@react-three/xr";
 import CustomVRButton from "@/components/dom/VRButton";
@@ -39,9 +43,28 @@ export default function Scene({ children, ...props }) {
         <ambientLight intensity={0.75} />
         {children}
         <Preload all />
-        <OrbitControls />
+        <OrbitControls target={[0, 0, -1]} />
       </XR>
       <Stats showPanel={0} className="stats" {...props} />
+      {/* helpers: */}
+      <GizmoHelper alignment="bottom-right" margin={[80, 80]}>
+        <GizmoViewport
+          axisColors={["red", "green", "blue"]}
+          labelColor="black"
+        />
+      </GizmoHelper>
+      <Grid
+        cellSize={0.5}
+        cellThickness={0.5}
+        cellColor={"yellow"}
+        sectionSize={1}
+        sectionThickness={1}
+        sectionColor={"#2080ff"}
+        followCamera={true}
+        infiniteGrid={true}
+        fadeDistance={100}
+        fadeStrength={1}
+      />
     </Canvas>
   );
 }

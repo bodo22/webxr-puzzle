@@ -2,7 +2,8 @@ import React from "react";
 import { useXR } from "@react-three/xr";
 import Logo from "@/components/canvas/Logo";
 import { useThree } from "@react-three/fiber";
-import RemoteControllers from "@/components/canvas/remote/RemoteHandsAndControllers";
+import RemoteHandsAndControllers from "@/components/canvas/remote/RemoteHandsAndControllers";
+import PizzaCircle from "@/components/canvas/PizzaCircle";
 import useSocket from "@/stores/socket";
 
 // Dom components go here
@@ -36,15 +37,20 @@ const RecordHandData = () => {
   }, [controllers, xr, sendHandData]);
 };
 
-index.canvas = (props) => {
+const IndexCanvas = (props) => {
+  const [pizzaPositions, setPizzaPositions] = React.useState([]);
+
   return (
     <>
-      <RemoteControllers />
       <RecordHandData />
+      <RemoteHandsAndControllers pizzaPositions={pizzaPositions} />
+      <PizzaCircle setPizzaPositions={setPizzaPositions} />
       <Logo scale={0.5} position-z={-5} />
     </>
   );
 };
+
+index.canvas = IndexCanvas;
 
 export async function getStaticProps() {
   return { props: { title: "Puzzle" } };
