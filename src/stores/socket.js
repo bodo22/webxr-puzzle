@@ -57,17 +57,13 @@ const mutations = (set, get) => {
         let target = newTargets.find(
           ({ handedness: targetHandedness }) => handedness === targetHandedness
         );
+        const fakeInputSource =
+          fakeInputSourceFactory.createFakeInputSource(handedness);
         if (!target) {
-          target = new RemoteXRController(data.userId, handedness);
-          const fakeInputSource = fakeInputSourceFactory.createFakeInputSource(
-            target.handedness
-          );
+          target = new RemoteXRController(data, handedness);
           target.webXRController.connect(fakeInputSource);
           newTargets.push(target);
         }
-        const fakeInputSource = fakeInputSourceFactory.createFakeInputSource(
-          target.handedness
-        );
         const fakeFrame = {
           session: { visibilityState: "visible" },
           getPose: () => null,

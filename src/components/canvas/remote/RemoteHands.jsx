@@ -23,10 +23,26 @@ export default function RemoteHands({ controllers, modelLeft, modelRight }) {
     }
   }, [controllers, modelLeft, modelRight]);
 
+  const oculusHandModelRef = React.useCallback((handModel) => {
+    if (handModel && !handModel?._listeners?.childadded?.length) {
+      function childAdded(event) {
+        const mesh = event?.child?.getObjectByProperty("type", "SkinnedMesh");
+        const color = event?.target?.parent?.parent?.data?.color;
+        if (mesh && color) {
+          mesh.material.color.setRGB(color.r, color.g, color.b);
+        }
+      }
+      handModel.addEventListener("childadded", childAdded);
+    }
+  }, []);
+
   return Object.values(controllers).map((targets) =>
     targets.map((target) => {
       return createPortal(
-        <oculusHandModel args={[target.hand, modelLeft, modelRight]} />,
+        <oculusHandModel
+          ref={oculusHandModelRef}
+          args={[target.hand, modelLeft, modelRight]}
+        />,
         target.hand
       );
     })

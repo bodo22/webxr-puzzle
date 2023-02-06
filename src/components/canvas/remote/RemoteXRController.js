@@ -1,10 +1,11 @@
 import * as THREE from "three";
 
 export default class XRController extends THREE.Group {
-  constructor(userId, handedness) {
+  constructor(data, handedness) {
     super();
 
-    this.userId = userId;
+    this.userId = data.userId;
+    this.data = data;
     this.handedness = handedness;
     this.webXRController = new THREE.WebXRController();
     this.controller = this.webXRController.getTargetRaySpace();

@@ -3,7 +3,7 @@ import { Vector3, DoubleSide } from "three";
 
 export default function PizzaCircle({ setPizzaPositions }) {
   const radius = 1;
-  const segments = 11;
+  const segments = 9; // TODO: make dynamic from num users in room
   const thetaStart = 90 * (Math.PI / 180);
 
   const measureCircle = React.useCallback(
