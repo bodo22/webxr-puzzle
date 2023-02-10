@@ -10,10 +10,13 @@ const initialState = {
   ready: false,
   controllers: {},
   userId: undefined,
+  users: [],
+  handView: "Ego",
 };
 
 const mutations = (set, get) => {
   setInterval(() => {
+    // TODO: removeable?
     const newControllers = Object.entries(get().controllers).reduce(
       (prev, [key, targets]) => {
         const keep = targets.every(
@@ -43,6 +46,12 @@ const mutations = (set, get) => {
     })
     .on("userId", (userId) => {
       set({ userId });
+    })
+    .on("userUpdate", (users) => {
+      set({ users });
+    })
+    .on("handViewChange", (event) => {
+      set({ handView: event.type });
     })
     .on("handData", (data) => {
       // .on("recordedHandData", (data) => {
@@ -96,7 +105,6 @@ const mutations = (set, get) => {
             [data.userId]: newTargets,
           },
         });
-        console.log(`updated controllers for ${data.userId}.`);
       }
     });
 
@@ -104,19 +112,20 @@ const mutations = (set, get) => {
     sendHandData(handData) {
       socket.emit("handData", { userId: get().userId, handData: handData });
     },
-    setControllers(userId, controllers) {
-      set({
-        controllers: {
-          ...get().controllers,
-          [userId]: controllers,
-        },
-      });
-    },
   };
 };
 
 const useSocket = create(
   subscribeWithSelector(combine(initialState, mutations))
 );
+
+export const useUsers = () => {
+  const controllers = useSocket((state) => state.controllers);
+  const users = useSocket((state) => state.users);
+
+  return users.filter((user) => {
+    return !!controllers[user.userId];
+  }, []);
+};
 
 export default useSocket;
