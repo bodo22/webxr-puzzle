@@ -44,7 +44,10 @@ const IndexCanvas = (props) => {
     <>
       <RecordHandData />
       <RemoteHandsAndControllers pizzaPositions={pizzaPositions} />
-      <PizzaCircle setPizzaPositions={setPizzaPositions} />
+      <PizzaCircle
+        setPizzaPositions={setPizzaPositions}
+        pizzaPositions={pizzaPositions}
+      />
       <Logo scale={0.5} position-z={-5} />
     </>
   );

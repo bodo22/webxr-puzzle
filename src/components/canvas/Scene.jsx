@@ -39,8 +39,8 @@ export default function Scene({ children, ...props }) {
         <PerspectiveCamera makeDefault position-z={1} />
         <Controllers />
         <Hands />
-        <directionalLight intensity={0.75} />
-        <ambientLight intensity={0.75} />
+        <directionalLight intensity={0.3} />
+        <ambientLight intensity={0.4} />
         {children}
         <Preload all />
         <OrbitControls target={[0, 0, -1]} />
@@ -65,6 +65,10 @@ export default function Scene({ children, ...props }) {
         fadeDistance={100}
         fadeStrength={1}
       />
+      <mesh {...props}>
+        <sphereGeometry args={[0.03, 64, 64]} />
+        <meshStandardMaterial color={"hotpink"} />
+      </mesh>
     </Canvas>
   );
 }

@@ -3,9 +3,42 @@ import { OculusHandModel } from "three-stdlib";
 import { extend, createPortal } from "@react-three/fiber";
 
 import { fakeInputSourceFactory } from "@/utils";
+import { useUsers } from "@/stores/socket";
 
-export default function RemoteHands({ controllers, modelLeft, modelRight }) {
+function RemoteHand({ hand, color, modelLeft, modelRight }) {
+  const handModelRef = React.useRef();
+  const meshRef = React.useRef();
+  const { r, g, b } = color;
+  React.useLayoutEffect(() => {
+    function setColor() {
+      if (meshRef.current) {
+        meshRef.current.material.metalness = 0.3;
+        meshRef.current.material.color.setRGB(r, g, b);
+      }
+    }
+    const handModel = handModelRef.current;
+    if (handModel) {
+      function childAdded(event) {
+        const mesh = event.child.getObjectByProperty("type", "SkinnedMesh");
+        meshRef.current = mesh;
+        setColor();
+      }
+      handModel.addEventListener("childadded", childAdded);
+      return () => {
+        handModel.removeEventListener("childadded", childAdded);
+      };
+    }
+  }, [r, g, b]);
+
+  return createPortal(
+    <oculusHandModel ref={handModelRef} args={[hand, modelLeft, modelRight]} />,
+    hand
+  );
+}
+
+export default function RemoteHands({ controllers }) {
   React.useMemo(() => extend({ OculusHandModel }), []);
+  const users = useUsers();
 
   // Send fake connected event (no-op) so models start loading
   React.useLayoutEffect(() => {
@@ -21,30 +54,22 @@ export default function RemoteHands({ controllers, modelLeft, modelRight }) {
         });
       }
     }
-  }, [controllers, modelLeft, modelRight]);
+  }, [controllers]);
 
-  const oculusHandModelRef = React.useCallback((handModel) => {
-    if (handModel && !handModel?._listeners?.childadded?.length) {
-      function childAdded(event) {
-        const mesh = event?.child?.getObjectByProperty("type", "SkinnedMesh");
-        const color = event?.target?.parent?.parent?.data?.color;
-        if (mesh && color) {
-          mesh.material.color.setRGB(color.r, color.g, color.b);
-        }
-      }
-      handModel.addEventListener("childadded", childAdded);
+  return users.map(({ userId, color }, index) => {
+    const targets = controllers[userId];
+    if (!targets) {
+      return null;
     }
-  }, []);
-
-  return Object.values(controllers).map((targets) =>
-    targets.map((target) => {
-      return createPortal(
-        <oculusHandModel
-          ref={oculusHandModelRef}
-          args={[target.hand, modelLeft, modelRight]}
-        />,
-        target.hand
+    return targets.map((target) => {
+      return (
+        <RemoteHand
+          userId={userId}
+          key={`${userId}-${target.handedness}-hand-${index}`}
+          color={color}
+          hand={target.hand}
+        />
       );
-    })
-  );
+    });
+  });
 }

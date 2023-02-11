@@ -6,37 +6,44 @@ import { fakeInputSourceFactory } from "@/utils";
 
 import RemoteXRController from "@/components/canvas/remote/RemoteXRController";
 
+export function arrayRotate(arr, count) {
+  const len = arr.length;
+  arr.push(...arr.splice(0, ((-count % len) + len) % len));
+  return arr;
+}
+
 const initialState = {
   ready: false,
   controllers: {},
   userId: undefined,
+  userIdIndex: 0,
   users: [],
   handView: "Ego",
 };
 
 const mutations = (set, get) => {
-  setInterval(() => {
-    // TODO: removeable?
-    const newControllers = Object.entries(get().controllers).reduce(
-      (prev, [key, targets]) => {
-        const keep = targets.every(
-          (target) =>
-            !target.lastXRUpdate || Date.now() - target.lastXRUpdate < 500
-        );
-        if (keep) {
-          prev[key] = targets;
-        }
-        return prev;
-      },
-      {}
-    );
-    if (
-      Object.keys(newControllers).length !==
-      Object.keys(get().controllers).length
-    ) {
-      set({ controllers: newControllers });
-    }
-  }, 1000);
+  // setInterval(() => {
+  //   // TODO: clean up in usersUpdate event instead of here
+  //   const newControllers = Object.entries(get().controllers).reduce(
+  //     (prev, [key, targets]) => {
+  //       const keep = targets.every(
+  //         (target) =>
+  //           !target.lastXRUpdate || Date.now() - target.lastXRUpdate < 500
+  //       );
+  //       if (keep) {
+  //         prev[key] = targets;
+  //       }
+  //       return prev;
+  //     },
+  //     {}
+  //   );
+  //   if (
+  //     Object.keys(newControllers).length !==
+  //     Object.keys(get().controllers).length
+  //   ) {
+  //     set({ controllers: newControllers });
+  //   }
+  // }, 1000);
   socket
     .on("connect", () => {
       set({ ready: true });
@@ -47,14 +54,18 @@ const mutations = (set, get) => {
     .on("userId", (userId) => {
       set({ userId });
     })
-    .on("userUpdate", (users) => {
-      set({ users });
+    .on("userUpdate", (newUsers) => {
+      const userId = get().userId;
+      const userIdIndex = newUsers.findIndex((user) => userId === user.userId);
+      if (userIdIndex === -1) {
+        throw new Error(`userIdIndex not found, maybe not set?`);
+      }
+      set({ users: newUsers, userIdIndex });
     })
     .on("handViewChange", (event) => {
       set({ handView: event.type });
     })
     .on("handData", (data) => {
-      // .on("recordedHandData", (data) => {
       const oldTargets = get().controllers?.[data.userId] || [];
       const newTargets = oldTargets.reduce((prev, target) => {
         if (data.handData[target.handedness]) {
@@ -124,7 +135,7 @@ export const useUsers = () => {
   const users = useSocket((state) => state.users);
 
   return users.filter((user) => {
-    return !!controllers[user.userId];
+    return !!controllers[user.userId] || user.isSessionSupported;
   }, []);
 };
 
