@@ -5,13 +5,12 @@ import useSocket, { useUsers } from "@/stores/socket";
 // import RemoteControllers from "./RemoteControllers";
 import RemoteHands from "./RemoteHands";
 
-function RemoteHandAndController({ userId, target, pizzaPositions, index }) {
+function RemoteHandAndController({ target, pizzaPositions, index }) {
   const handView = useSocket((state) => state.handView);
   const userIdIndex = useSocket((state) => state.userIdIndex);
   const users = useUsers();
 
   const groupProps = {
-    key: `${userId}-${target.handedness}`,
     "rotation-y": 0,
   };
   if (handView === "Pizza") {
@@ -40,25 +39,26 @@ export default function RemoteHandsAndControllers({ pizzaPositions }) {
 
   return (
     <>
-      {users.map(({ userId }, index) => {
-        const targets = controllers[userId];
-        if (!targets) {
-          return null;
-        }
-        return targets.map((target) => {
-          return (
-            <RemoteHandAndController
-              key={`${userId}-${target.handedness}`}
-              userId={userId}
-              target={target}
-              pizzaPositions={pizzaPositions}
-              index={index}
-            />
-          );
-        });
-      })}
+      {users
+        .map(({ userId }, index) => {
+          const targets = controllers[userId];
+          if (!targets) {
+            return null;
+          }
+          return targets.map((target) => {
+            return (
+              <RemoteHandAndController
+                key={`${userId}-${target.handedness}`}
+                target={target}
+                pizzaPositions={pizzaPositions}
+                index={index}
+              />
+            );
+          });
+        })
+        .flat()}
       {/* <RemoteControllers controllers={controllers} /> */}
-      <RemoteHands controllers={controllers} />
+      <RemoteHands />
     </>
   );
 }

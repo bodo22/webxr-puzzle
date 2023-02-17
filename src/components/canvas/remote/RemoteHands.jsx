@@ -3,12 +3,13 @@ import { OculusHandModel } from "three-stdlib";
 import { extend, createPortal } from "@react-three/fiber";
 
 import { fakeInputSourceFactory } from "@/utils";
-import { useUsers } from "@/stores/socket";
+import useSocket, { useUsers } from "@/stores/socket";
 
 function RemoteHand({ hand, color, modelLeft, modelRight }) {
   const handModelRef = React.useRef();
   const meshRef = React.useRef();
   const { r, g, b } = color;
+
   React.useLayoutEffect(() => {
     function setColor() {
       if (meshRef.current) {
@@ -36,9 +37,10 @@ function RemoteHand({ hand, color, modelLeft, modelRight }) {
   );
 }
 
-export default function RemoteHands({ controllers }) {
+export default function RemoteHands() {
   React.useMemo(() => extend({ OculusHandModel }), []);
   const users = useUsers();
+  const controllers = useSocket((state) => state.controllers);
 
   // Send fake connected event (no-op) so models start loading
   React.useLayoutEffect(() => {
@@ -56,20 +58,24 @@ export default function RemoteHands({ controllers }) {
     }
   }, [controllers]);
 
-  return users.map(({ userId, color }, index) => {
-    const targets = controllers[userId];
-    if (!targets) {
-      return null;
-    }
-    return targets.map((target) => {
-      return (
-        <RemoteHand
-          userId={userId}
-          key={`${userId}-${target.handedness}-hand-${index}`}
-          color={color}
-          hand={target.hand}
-        />
-      );
-    });
-  });
+  return users
+    .map(({ userId, color }) => {
+      const targets = controllers[userId];
+      if (!targets) {
+        return null;
+      }
+      return targets.map((target) => {
+        return (
+          <RemoteHand
+            key={`${userId}-${target.handedness}-hand`}
+            color={color}
+            hand={target.hand}
+          />
+        );
+      });
+    })
+    .flat();
+  // when changing seat positiosn via admin interface with this flat()
+  // the hands are disposed for some reason. maybe a r3f bug
+  // TODO: investigate further (but just for fun)
 }
