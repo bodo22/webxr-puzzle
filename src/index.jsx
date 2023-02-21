@@ -5,6 +5,7 @@ import { useThree } from "@react-three/fiber";
 import RemoteHandsAndControllers from "@/components/canvas/remote/RemoteHandsAndControllers";
 import PizzaCircle from "@/components/canvas/PizzaCircle";
 import useSocket from "@/stores/socket";
+import Crate from "@/components/canvas/Crate";
 
 // Dom components go here
 export default function index() {
@@ -49,6 +50,7 @@ const IndexCanvas = (props) => {
         pizzaPositions={pizzaPositions}
       />
       <Logo scale={0.5} position-z={-5} />
+      <Crate scale={0.2} position={[-0.15, -0.2, -0.3]} />
     </>
   );
 };

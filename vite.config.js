@@ -24,6 +24,25 @@ const addLocalIpLog = () => {
   };
 };
 
+const watchNodeModules = () => {
+  return {
+    name: "watch-node-modules",
+    configureServer(server) {
+      console.log(server.watcher.options);
+      server.watcher.options = {
+        ...server.watcher.options,
+        ignored: [
+          "**/.git/**",
+          /node_modules\/(?!three|@react-three|three-stdlib).*/,
+          '**/test-results/**',
+          "**/node_modules/.vite/**",
+        ],
+      };
+      console.log(server.watcher.options);
+    },
+  };
+};
+
 async function getFile(path) {
   return new Promise((resolve) => {
     let data = "";
@@ -62,11 +81,19 @@ export default defineConfig(async () => {
   }
 
   return {
-    plugins: [react(), eslint(), jsconfigPaths(), addLocalIpLog()],
+    plugins: [
+      react(),
+      eslint(),
+      jsconfigPaths(),
+      addLocalIpLog(),
+      watchNodeModules(),
+    ],
     server: {
       port,
       watch: {
         ignored: [
+          // not working, see https://github.com/vitejs/vite/issues/8619
+          // using watchNodeModules instead
           "!**/node_modules/three/**",
           "!**/node_modules/@react-three/fiber/**",
           "!**/node_modules/@react-three/drei/**",

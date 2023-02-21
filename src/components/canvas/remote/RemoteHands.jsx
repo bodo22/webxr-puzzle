@@ -4,24 +4,28 @@ import { extend, createPortal } from "@react-three/fiber";
 
 import { fakeInputSourceFactory } from "@/utils";
 import useSocket, { useUsers } from "@/stores/socket";
+// import useInteracting from "@/stores/interacting";
 
-function RemoteHand({ hand, color, modelLeft, modelRight }) {
+// import Axes from "@/components/canvas/debug/Axes";
+
+function RemoteHand({ hand, color, modelLeft, modelRight, index, handedness }) {
   const handModelRef = React.useRef();
-  const meshRef = React.useRef();
+  const handMeshModelRef = React.useRef();
+  // const setHand = useInteracting((store) => store.setHand);
   const { r, g, b } = color;
 
   React.useLayoutEffect(() => {
     function setColor() {
-      if (meshRef.current) {
-        meshRef.current.material.metalness = 0.3;
-        meshRef.current.material.color.setRGB(r, g, b);
+      if (handMeshModelRef.current) {
+        handMeshModelRef.current.material.metalness = 0.3;
+        handMeshModelRef.current.material.color.setRGB(r, g, b);
       }
     }
     const handModel = handModelRef.current;
     if (handModel) {
       function childAdded(event) {
         const mesh = event.child.getObjectByProperty("type", "SkinnedMesh");
-        meshRef.current = mesh;
+        handMeshModelRef.current = mesh;
         setColor();
       }
       handModel.addEventListener("childadded", childAdded);
@@ -31,9 +35,29 @@ function RemoteHand({ hand, color, modelLeft, modelRight }) {
     }
   }, [r, g, b]);
 
-  return createPortal(
-    <oculusHandModel ref={handModelRef} args={[hand, modelLeft, modelRight]} />,
-    hand
+  // React.useEffect(() => {
+  //   // TODO: remove this if statement away & make it work agnostically for remote hands & own hands
+  //   if (index === 0) {
+  //     setHand(handedness, hand);
+  //   }
+  //   return () => {
+  //     if (index === 0) {
+  //       setHand(handedness, undefined);
+  //     }
+  //   };
+  // }, [setHand, hand, index, handedness]);
+
+  return (
+    <>
+      {createPortal(
+        <oculusHandModel
+          ref={handModelRef}
+          args={[hand, modelLeft, modelRight]}
+        />,
+        hand
+      )}
+      {/* <Axes model={handModelRef.current?.motionController} /> */}
+    </>
   );
 }
 
@@ -59,7 +83,7 @@ export default function RemoteHands() {
   }, [controllers]);
 
   return users
-    .map(({ userId, color }) => {
+    .map(({ userId, color }, index) => {
       const targets = controllers[userId];
       if (!targets) {
         return null;
@@ -67,9 +91,11 @@ export default function RemoteHands() {
       return targets.map((target) => {
         return (
           <RemoteHand
+            index={index}
             key={`${userId}-${target.handedness}-hand`}
             color={color}
             hand={target.hand}
+            handedness={target.handedness}
           />
         );
       });

@@ -1,16 +1,9 @@
 import React from "react";
 import { Canvas } from "@react-three/fiber";
-import {
-  PerspectiveCamera,
-  OrbitControls,
-  Preload,
-  Stats,
-  GizmoHelper,
-  GizmoViewport,
-  Grid,
-} from "@react-three/drei";
+import { PerspectiveCamera, OrbitControls, Preload } from "@react-three/drei";
 import { XR, Controllers, Hands } from "@react-three/xr";
 import CustomVRButton from "@/components/dom/VRButton";
+import Debug from "./debug";
 
 export default function Scene({ children, ...props }) {
   // Everything defined in here will persist between route changes, only children are swapped
@@ -45,30 +38,7 @@ export default function Scene({ children, ...props }) {
         <Preload all />
         <OrbitControls target={[0, 0, -1]} />
       </XR>
-      <Stats showPanel={0} className="stats" {...props} />
-      {/* helpers: */}
-      <GizmoHelper alignment="bottom-right" margin={[80, 80]}>
-        <GizmoViewport
-          axisColors={["red", "green", "blue"]}
-          labelColor="black"
-        />
-      </GizmoHelper>
-      <Grid
-        cellSize={0.5}
-        cellThickness={0.5}
-        cellColor={"yellow"}
-        sectionSize={1}
-        sectionThickness={1}
-        sectionColor={"#2080ff"}
-        followCamera={true}
-        infiniteGrid={true}
-        fadeDistance={100}
-        fadeStrength={1}
-      />
-      <mesh {...props}>
-        <sphereGeometry args={[0.03, 64, 64]} />
-        <meshStandardMaterial color={"hotpink"} />
-      </mesh>
+      <Debug />
     </Canvas>
   );
 }
