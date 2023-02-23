@@ -1,6 +1,6 @@
 import React from "react";
 import { Canvas } from "@react-three/fiber";
-import { PerspectiveCamera, OrbitControls, Preload } from "@react-three/drei";
+import { PerspectiveCamera, Preload } from "@react-three/drei";
 import { XR, Controllers, Hands } from "@react-three/xr";
 import CustomVRButton from "@/components/dom/VRButton";
 import Debug from "./debug";
@@ -36,7 +36,6 @@ export default function Scene({ children, ...props }) {
         <ambientLight intensity={0.4} />
         {children}
         <Preload all />
-        <OrbitControls target={[0, 0, -1]} />
       </XR>
       <Debug />
     </Canvas>

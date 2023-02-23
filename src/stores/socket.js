@@ -1,7 +1,6 @@
-import create from "zustand";
+import { create } from "zustand";
 import { combine, subscribeWithSelector } from "zustand/middleware";
 import socket from "./socketConnection";
-
 import { fakeInputSourceFactory } from "@/utils";
 
 import RemoteXRController from "@/components/canvas/remote/RemoteXRController";
@@ -13,6 +12,7 @@ export function arrayRotate(arr, count) {
 }
 
 const initialState = {
+  socket,
   ready: false,
   controllers: {},
   userId: undefined,
@@ -22,28 +22,6 @@ const initialState = {
 };
 
 const mutations = (set, get) => {
-  // setInterval(() => {
-  //   // TODO: clean up in usersUpdate event instead of here
-  //   const newControllers = Object.entries(get().controllers).reduce(
-  //     (prev, [key, targets]) => {
-  //       const keep = targets.every(
-  //         (target) =>
-  //           !target.lastXRUpdate || Date.now() - target.lastXRUpdate < 500
-  //       );
-  //       if (keep) {
-  //         prev[key] = targets;
-  //       }
-  //       return prev;
-  //     },
-  //     {}
-  //   );
-  //   if (
-  //     Object.keys(newControllers).length !==
-  //     Object.keys(get().controllers).length
-  //   ) {
-  //     set({ controllers: newControllers });
-  //   }
-  // }, 1000);
   socket
     .on("connect", () => {
       set({ ready: true });
@@ -122,6 +100,9 @@ const mutations = (set, get) => {
   return {
     sendHandData(handData) {
       socket.emit("handData", { userId: get().userId, handData: handData });
+    },
+    sendPinchData(pinchData) {
+      socket.emit("pinchData", { userId: get().userId, ...pinchData });
     },
   };
 };

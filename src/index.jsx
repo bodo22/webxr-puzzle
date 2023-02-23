@@ -21,14 +21,14 @@ export default function index() {
 const RecordHandData = () => {
   const controllers = useXR((state) => state.controllers);
   const xr = useThree((state) => state.gl.xr);
-  const sendHandData = useSocket(({ sendHandData }) => sendHandData);
+  const sendHandData = useSocket((state) => state.sendHandData);
 
   React.useEffect(() => {
     const handler = ({ data }) => {
       sendHandData(data);
     };
     if (controllers.length === 0) {
-      // this removes remote hands instantly, instead of relying on the interval
+      // this removes remote hands instantly
       sendHandData({});
     }
     xr.addEventListener("managedHandsJointData", handler);
@@ -50,7 +50,7 @@ const IndexCanvas = (props) => {
         pizzaPositions={pizzaPositions}
       />
       <Logo scale={0.5} position-z={-5} />
-      <Crate scale={0.2} position={[-0.15, -0.2, -0.3]} />
+      <Crate name="my-fun-test-crate" scale={0.2} position={[-0.15, -0.2, -0.3]} />
     </>
   );
 };

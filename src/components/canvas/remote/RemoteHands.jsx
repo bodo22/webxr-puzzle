@@ -4,14 +4,13 @@ import { extend, createPortal } from "@react-three/fiber";
 
 import { fakeInputSourceFactory } from "@/utils";
 import useSocket, { useUsers } from "@/stores/socket";
-// import useInteracting from "@/stores/interacting";
+import useInteracting from "@/stores/interacting";
 
 // import Axes from "@/components/canvas/debug/Axes";
 
-function RemoteHand({ hand, color, modelLeft, modelRight, index, handedness }) {
+function RemoteHand({ hand, color, modelLeft, modelRight, handedness, index }) {
   const handModelRef = React.useRef();
   const handMeshModelRef = React.useRef();
-  // const setHand = useInteracting((store) => store.setHand);
   const { r, g, b } = color;
 
   React.useLayoutEffect(() => {
@@ -29,23 +28,32 @@ function RemoteHand({ hand, color, modelLeft, modelRight, index, handedness }) {
         setColor();
       }
       handModel.addEventListener("childadded", childAdded);
+      setColor();
       return () => {
         handModel.removeEventListener("childadded", childAdded);
       };
     }
   }, [r, g, b]);
 
-  // React.useEffect(() => {
-  //   // TODO: remove this if statement away & make it work agnostically for remote hands & own hands
-  //   if (index === 0) {
-  //     setHand(handedness, hand);
-  //   }
-  //   return () => {
-  //     if (index === 0) {
-  //       setHand(handedness, undefined);
-  //     }
-  //   };
-  // }, [setHand, hand, index, handedness]);
+  // only needed for devving:
+  const userIdIndex = useSocket((state) => state.userIdIndex);
+  const users = useUsers();
+  const noXRUsers = users.every(
+    ({ isSessionSupported }) => !isSessionSupported
+  );
+  const setHand = useInteracting((store) => store.setHand);
+  const noXRUserAndFirst = userIdIndex === 0 && index === 0 && noXRUsers;
+  React.useEffect(() => {
+    // TODO: remove this if statement away & make it work agnostically for remote hands & own hands
+    if (noXRUserAndFirst) {
+      setHand(handedness, hand);
+    }
+    return () => {
+      if (noXRUserAndFirst) {
+        setHand(handedness, undefined);
+      }
+    };
+  }, [setHand, hand, handedness, noXRUserAndFirst]);
 
   return (
     <>

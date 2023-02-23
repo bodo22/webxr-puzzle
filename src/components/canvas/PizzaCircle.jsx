@@ -3,8 +3,9 @@ import { DoubleSide, MathUtils, Vector3 } from "three";
 import { Text } from "@react-three/drei";
 import useSocket, { arrayRotate, useUsers } from "@/stores/socket";
 import { formatRgb } from "culori";
+import { OrbitControls } from "@react-three/drei";
 
-const radius = 1;
+const radius = 0.5;
 
 export default function PizzaCircle({ setPizzaPositions, pizzaPositions }) {
   const userIdIndex = useSocket((state) => state.userIdIndex);
@@ -27,11 +28,13 @@ export default function PizzaCircle({ setPizzaPositions, pizzaPositions }) {
       // rotate array, to have "own" hands at array position 0
       setPizzaPositions(arrayRotate(newPositions.slice(1, -1), userIdIndex));
     }
-  }, [setPizzaPositions, circleSegments, userIdIndex, usersLength]);
+  }, [setPizzaPositions, circleSegments, userIdIndex]);
 
   return (
     <>
+      {/* rotation-x = thetaState, because circleGeos are vertical to begin with */}
       <mesh ref={circleMeshRef} position-z={-radius} rotation-x={thetaStart}>
+        {/* args[2] = thetaState, because circleGeos have their first segment at 3 O'Clock, but we want it at 6 */}
         <circleGeometry args={[radius, circleSegments, thetaStart]} />
         <meshStandardMaterial
           side={DoubleSide}
@@ -58,6 +61,7 @@ export default function PizzaCircle({ setPizzaPositions, pizzaPositions }) {
           </group>
         );
       })}
+      <OrbitControls target={[0, 0, -radius]} />
     </>
   );
 }
