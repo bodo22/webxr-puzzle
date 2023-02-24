@@ -47,13 +47,18 @@ export default function PizzaCircle({ setPizzaPositions, pizzaPositions }) {
         return (
           <group
             position={position}
+            rotation-y={MathUtils.degToRad(
+              userIdIndex * -(360 / (users.length === 2 ? 4 : users.length))
+            )}
             key={`${circleSegments}-index-position-for-${index}`}
           >
             <Text
               color={formatRgb(color)}
+              material-transparent={true}
+              material-opacity={0.6}
               anchorX="center"
               anchorY="middle"
-              fontSize={0.5}
+              fontSize={0.25}
             >
               {index}
             </Text>
