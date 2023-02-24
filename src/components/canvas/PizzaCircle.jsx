@@ -1,7 +1,7 @@
 import React from "react";
 import { DoubleSide, MathUtils, Vector3 } from "three";
 import { Text } from "@react-three/drei";
-import useSocket, { arrayRotate, useUsers } from "@/stores/socket";
+import useSocket, { useUsers } from "@/stores/socket";
 import { formatRgb } from "culori";
 import { OrbitControls } from "@react-three/drei";
 
@@ -25,8 +25,7 @@ export default function PizzaCircle({ setPizzaPositions, pizzaPositions }) {
         return p;
       });
       // first & last are "starting" points, in center of circle
-      // rotate array, to have "own" hands at array position 0
-      setPizzaPositions(arrayRotate(newPositions.slice(1, -1), userIdIndex));
+      setPizzaPositions(newPositions.slice(1, -1));
     }
   }, [setPizzaPositions, circleSegments, userIdIndex]);
 

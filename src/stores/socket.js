@@ -1,15 +1,11 @@
 import { create } from "zustand";
 import { combine, subscribeWithSelector } from "zustand/middleware";
+import throttle from "lodash.throttle";
+
 import socket from "./socketConnection";
 import { fakeInputSourceFactory } from "@/utils";
 
 import RemoteXRController from "@/components/canvas/remote/RemoteXRController";
-
-export function arrayRotate(arr, count) {
-  const len = arr.length;
-  arr.push(...arr.splice(0, ((-count % len) + len) % len));
-  return arr;
-}
 
 const initialState = {
   socket,
@@ -89,6 +85,7 @@ const mutations = (set, get) => {
         .concat(oldTargets.filter((x) => !newTargets.includes(x)));
       if (symDiff.length) {
         set({
+          ...get(),
           controllers: {
             ...get().controllers,
             [data.userId]: newTargets,
@@ -97,13 +94,19 @@ const mutations = (set, get) => {
       }
     });
 
+  function emitHandData(handData) {
+    socket.emit("handData", { userId: get().userId, handData: handData });
+  }
+  function emitPinchData(pinchData) {
+    socket.emit("pinchData", { userId: get().userId, ...pinchData });
+  }
+
+  const fps = 30;
+  const wait = 1000 / fps;
+
   return {
-    sendHandData(handData) {
-      socket.emit("handData", { userId: get().userId, handData: handData });
-    },
-    sendPinchData(pinchData) {
-      socket.emit("pinchData", { userId: get().userId, ...pinchData });
-    },
+    sendHandData: throttle(emitHandData, wait),
+    sendPinchData: throttle(emitPinchData, wait),
   };
 };
 
@@ -112,12 +115,9 @@ const useSocket = create(
 );
 
 export const useUsers = () => {
-  const controllers = useSocket((state) => state.controllers);
   const users = useSocket((state) => state.users);
 
-  return users.filter((user) => {
-    return !!controllers[user.userId] || user.isSessionSupported;
-  }, []);
+  return users
 };
 
 export default useSocket;

@@ -4,10 +4,14 @@ import { MathUtils } from "three";
 import useSocket, { useUsers } from "@/stores/socket";
 // import RemoteControllers from "./RemoteControllers";
 import RemoteHands from "./RemoteHands";
+import Crate from "@/components/canvas/Crate";
 
-function RemoteHandAndController({ target, pizzaPositions, index }) {
+function RemoteTarget({ target }) {
+  return <primitive object={target} />;
+}
+
+function RemoteXRControllers({ targets, pizzaPositions, index, userId }) {
   const handView = useSocket((state) => state.handView);
-  const userIdIndex = useSocket((state) => state.userIdIndex);
   const users = useUsers();
 
   const groupProps = {
@@ -18,17 +22,19 @@ function RemoteHandAndController({ target, pizzaPositions, index }) {
     // to not have the 2 users be opposite of each other when there are only 2
     // put them 90° next to each other (as if there were 4)
     const rotateSegments = users.length === 2 ? 4 : users.length;
-    // absolute index of hands in users array
-    // minus userIdIndex to compensate array rotation of pizzaPositions
-    // reason behind all the hassle: in pizza view, connected XR user hands have
-    // no common reference space, so we need the rotate users around pizza center
-    // for every user individually
-    const rotationDeg = (index - userIdIndex) * -(360 / rotateSegments);
+    // index of hands in users array (the position on the pizza)
+    const rotationDeg = index * -(360 / rotateSegments);
     groupProps["rotation-y"] = MathUtils.degToRad(rotationDeg);
   }
+
   return (
     <group {...groupProps}>
-      <primitive object={target} />
+      {targets?.map((target) => {
+        const { handedness } = target;
+        return (
+          <RemoteTarget key={`${userId}-${handedness}-xr`} target={target} />
+        );
+      })}
     </group>
   );
 }
@@ -39,22 +45,23 @@ export default function RemoteHandsAndControllers({ pizzaPositions }) {
 
   return (
     <>
+      <Crate
+        name="my-fun-test-crate"
+        scale={0.2}
+        position={[-0.15, -0.2, -0.3]}
+      />
       {users
         .map(({ userId }, index) => {
           const targets = controllers[userId];
-          if (!targets) {
-            return null;
-          }
-          return targets.map((target) => {
-            return (
-              <RemoteHandAndController
-                key={`${userId}-${target.handedness}`}
-                target={target}
-                pizzaPositions={pizzaPositions}
-                index={index}
-              />
-            );
-          });
+          return (
+            <RemoteXRControllers
+              key={`${userId}-xr`}
+              targets={targets}
+              userId={userId}
+              pizzaPositions={pizzaPositions}
+              index={index}
+            />
+          );
         })
         .flat()}
       {/* <RemoteControllers controllers={controllers} /> */}

@@ -4,9 +4,8 @@ import Logo from "@/components/canvas/Logo";
 import { useThree } from "@react-three/fiber";
 import RemoteHandsAndControllers from "@/components/canvas/remote/RemoteHandsAndControllers";
 import PizzaCircle from "@/components/canvas/PizzaCircle";
-import useSocket from "@/stores/socket";
-import Crate from "@/components/canvas/Crate";
-
+import useSocket, { useUsers } from "@/stores/socket";
+import { MathUtils, Vector3 } from "three";
 // Dom components go here
 export default function index() {
   return (
@@ -38,19 +37,44 @@ const RecordHandData = () => {
   }, [controllers, xr, sendHandData]);
 };
 
+function MoveCamera({ pizzaPositions }) {
+  const handView = useSocket((state) => state.handView);
+  const userIdIndex = useSocket((state) => state.userIdIndex);
+  const users = useUsers();
+
+  const player = useXR((state) => state.player);
+  let rotationY = 0;
+  let position = new Vector3();
+  if (handView === "Pizza" && pizzaPositions[userIdIndex]) {
+    position = pizzaPositions[userIdIndex];
+    // to not have the 2 users be opposite of each other when there are only 2
+    // put them 90° next to each other (as if there were 4)
+    const rotateSegments = users.length === 2 ? 4 : users.length;
+    // absolute index of userId of hands in users array
+    const rotationDeg = userIdIndex * -(360 / rotateSegments);
+    rotationY = MathUtils.degToRad(rotationDeg);
+  }
+
+  React.useEffect(() => {
+    const object = player;
+    object.position.copy(new Vector3(position.x, position.y, position.z));
+    object.rotation.y = rotationY;
+  }, [player, rotationY, position.x, position.y, position.z]);
+}
+
 const IndexCanvas = (props) => {
   const [pizzaPositions, setPizzaPositions] = React.useState([]);
 
   return (
     <>
       <RecordHandData />
+      <MoveCamera pizzaPositions={pizzaPositions} />
       <RemoteHandsAndControllers pizzaPositions={pizzaPositions} />
       <PizzaCircle
         setPizzaPositions={setPizzaPositions}
         pizzaPositions={pizzaPositions}
       />
       <Logo scale={0.5} position-z={-5} />
-      <Crate name="my-fun-test-crate" scale={0.2} position={[-0.15, -0.2, -0.3]} />
     </>
   );
 };

@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useXREvent } from "@react-three/xr";
 import { mergeRefs } from "react-merge-refs";
-import { Matrix4, Quaternion, Vector3, MathUtils } from "three";
+import { Matrix4, Quaternion, Vector3 } from "three";
 
 import useSocket, { useUsers } from "@/stores/socket";
 import useInteracting, { useHandEvent } from "@/stores/interacting";
@@ -10,13 +10,12 @@ import * as handModelUtils from "@/utils";
 
 function useUpdateGroup(ref, pinchingControllerRef, previousTransformRef) {
   const sendPinchData = useSocket((state) => state.sendPinchData);
-  const userIdIndex = useSocket((state) => state.userIdIndex);
+  const userId = useSocket((state) => state.userId);
 
   useFrame(() => {
     const { pinchedObjects } = useInteracting.getState();
     const pinchingThisObject = Object.values(pinchedObjects).some(
-      (pinchedObject) =>
-        pinchedObject?.current && pinchedObject.current === ref.current
+      (pinchedObject) => pinchedObject && pinchedObject === ref.current.name
     );
     if (
       !pinchingControllerRef.current ||
@@ -66,16 +65,14 @@ function useUpdateGroup(ref, pinchingControllerRef, previousTransformRef) {
     previousTransformRef.current = transform.clone();
 
     sendPinchData({
+      pinchStart: ref.current.userData.pinchStart,
       matrix: ref.current.matrix.elements,
       name: ref.current.name,
-      pinchStart: ref.current.userData.pinchStart,
-      userIdIndex,
+      userId,
     });
   });
 }
 
-// TODO: base on pizza circle radius
-const point = new Vector3(0, 0, -0.5);
 
 function useSetPinching(ref) {
   const userIdIndex = useSocket((state) => state.userIdIndex);
@@ -95,22 +92,6 @@ function useSetPinching(ref) {
         obj.matrix.elements = pinchData.matrix;
         obj.matrix.decompose(obj.position, obj.quaternion, obj.scale);
 
-        if (handView === "Pizza") {
-          const rotationDeg =
-            (userIdIndex - pinchData.userIdIndex) * (360 / circleSegments);
-          obj.position.sub(point); // remove the offset
-          // rotate around center of pizza
-          obj.position.applyAxisAngle(
-            new Vector3(0, 1, 0),
-            MathUtils.degToRad(rotationDeg)
-          );
-          // rotate around center of self
-          obj.rotateOnWorldAxis(
-            new Vector3(0, 1, 0),
-            MathUtils.degToRad(rotationDeg)
-          );
-          obj.position.add(point); // re-add the offset
-        }
 
         ref.current.updateWorldMatrix(false, true);
       }
@@ -138,7 +119,7 @@ const Pinch = React.forwardRef(
         previousTransformRef.current = transform.clone();
         pinchingControllerRef.current = motionController;
         ref.current.userData.pinchStart = Date.now();
-        setPinchedObject(handedness, ref);
+        setPinchedObject(handedness, ref.current.name);
       }
     }
 
@@ -173,7 +154,6 @@ const Pinch = React.forwardRef(
 
     useUpdateGroup(ref, pinchingControllerRef, previousTransformRef);
     useSetPinching(ref);
-
 
     return (
       <group ref={mergeRefs([passedRef, ref])} {...props}>

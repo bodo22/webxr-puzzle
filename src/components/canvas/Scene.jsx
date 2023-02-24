@@ -29,7 +29,8 @@ export default function Scene({ children, ...props }) {
         // referenceSpace="viewer"
         // referenceSpace="unbounded"
       >
-        <PerspectiveCamera makeDefault position-z={1} />
+        {/* camera position is managed by moving the xr player, see index.jsx */}
+        <PerspectiveCamera makeDefault />
         <Controllers />
         <Hands />
         <directionalLight intensity={0.3} />
