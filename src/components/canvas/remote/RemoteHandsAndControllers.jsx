@@ -5,6 +5,7 @@ import useSocket, { useUsers } from "@/stores/socket";
 // import RemoteControllers from "./RemoteControllers";
 import RemoteHands from "./RemoteHands";
 import Crate from "@/components/canvas/Crate";
+import LiverArteries from "@/components/canvas/LiverArteries";
 
 function RemoteTarget({ target }) {
   return <primitive object={target} />;
@@ -45,6 +46,12 @@ export default function RemoteHandsAndControllers({ pizzaPositions }) {
 
   return (
     <>
+      <LiverArteries
+        debug={true}
+        name="my-fun-test-LiverArteries"
+        scale={0.2}
+        position={[-0.15, -0.2, -0.3]}
+      />
       <Crate
         name="my-fun-test-crate"
         scale={0.2}

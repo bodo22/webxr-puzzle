@@ -6,9 +6,9 @@ import { fakeInputSourceFactory } from "@/utils";
 import useSocket, { useUsers } from "@/stores/socket";
 import useInteracting from "@/stores/interacting";
 
-// import Axes from "@/components/canvas/debug/Axes";
+import Axes from "@/components/canvas/debug/Axes";
 
-function RemoteHand({ hand, color, modelLeft, modelRight, handedness, index }) {
+function RemoteHand({ hand, color, modelLeft, modelRight, handedness, index, debug }) {
   const handModelRef = React.useRef();
   const handMeshModelRef = React.useRef();
   const { r, g, b } = color;
@@ -64,7 +64,7 @@ function RemoteHand({ hand, color, modelLeft, modelRight, handedness, index }) {
         />,
         hand
       )}
-      {/* <Axes model={handModelRef.current?.motionController} /> */}
+      {debug && <Axes model={handModelRef.current?.motionController} />}
     </>
   );
 }
@@ -104,6 +104,7 @@ export default function RemoteHands() {
             color={color}
             hand={target.hand}
             handedness={target.handedness}
+            // debug={true}
           />
         );
       });

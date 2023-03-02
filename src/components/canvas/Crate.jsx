@@ -1,16 +1,20 @@
 import { useGLTF } from "@react-three/drei";
 import React, { useEffect, useRef, useState } from "react";
-import { Matrix3, Mesh, Vector3 } from "three";
+import { Matrix3, Box3, Vector3, BoxHelper } from "three";
 import { OBB } from "three-stdlib";
+import { useHelper } from "@react-three/drei";
 
 import Pinch from "./Pinch";
 import * as handModelUtils from "@/utils";
+import ShowWorldPosition from "./debug/ShowWorldPosition";
 
 export default function Crate(props) {
   const group = useRef();
   const { nodes, materials } = useGLTF(
     "https://vazxmixjsiawhamofees.supabase.co/storage/v1/object/public/models/crate/model.gltf"
   );
+
+  useHelper(props.debug && group, BoxHelper, "blue");
 
   const materialsRef = useRef(materials);
   const [isPinched, setPinched] = useState(false);
@@ -46,28 +50,19 @@ export default function Crate(props) {
       isColliding={({ hand }) => {
         // do initial position check (if futher, don't check for collisions)
         const position = handModelUtils.getHandPosition(hand);
-        const cratePosition = group.current.getWorldPosition(new Vector3());
+        const groupPosition = group.current.getWorldPosition(new Vector3());
 
-        // calculate based on bounding box
-        // for now hardcodedackage
-        if (position.distanceTo(cratePosition) > 0.2) {
-          // console.log('IGNORED', position.distanceTo(cratePosition))
-          return;
-        }
+        const box = new Box3().setFromObject(group.current);
 
-        let mesh = undefined;
-        group.current.traverse((object) => {
-          if (!mesh && object instanceof Mesh && object.geometry) {
-            mesh = object;
-          }
-        });
-        if (!mesh) {
+        if (!box.containsPoint(position)) {
+          props.debug &&
+            console.log("IGNORED", position.distanceTo(groupPosition));
           return;
         }
 
         const obb = new OBB(
           new Vector3().setFromMatrixPosition(group.current.matrixWorld),
-          mesh.geometry.boundingBox
+          box
             .getSize(new Vector3())
             .multiply(group.current.scale)
             .divideScalar(2),
@@ -105,11 +100,12 @@ export default function Crate(props) {
       {...props}
       dispose={null}
     >
+      {props.debug && <ShowWorldPosition target={group} />}
       <group rotation={[Math.PI / 2, 0, 0]}>
-        {/* <mesh
+        <mesh
           geometry={nodes.Cube013.geometry}
           material={materialsRef.current["BrownDark.057"]}
-        /> */}
+        />
         <mesh
           geometry={nodes.Cube013_1.geometry}
           material={materialsRef.current["Metal.089"]}
