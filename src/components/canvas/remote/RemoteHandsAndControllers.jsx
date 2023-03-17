@@ -49,12 +49,13 @@ export default function RemoteHandsAndControllers({ pizzaPositions }) {
       <LiverArteries
         debug={true}
         name="my-fun-test-LiverArteries"
-        scale={0.2}
+        scale={0.5}
         position={[-0.15, -0.2, -0.3]}
       />
       <Crate
+        debug={true}
         name="my-fun-test-crate"
-        scale={0.2}
+        scale={0.3}
         position={[-0.15, -0.2, -0.3]}
       />
       {users

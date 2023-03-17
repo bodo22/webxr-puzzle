@@ -6,10 +6,10 @@ import { useLoader } from "@react-three/fiber";
 import { useHelper } from "@react-three/drei";
 
 import Pinch from "./Pinch";
-import * as utils from "@/utils";
 import ShowWorldPosition from "./debug/ShowWorldPosition";
 
 export default function LiverArteries(props) {
+  const innerGroup = React.useRef();
   const group = React.useRef();
 
   const obj1 = useLoader(OBJLoader, "/models/LiVR_Pat_ID4_Vein.obj");
@@ -19,80 +19,61 @@ export default function LiverArteries(props) {
   useHelper(props.debug && group, BoxHelper, "blue");
   const [offset, setOffset] = React.useState();
 
-  React.useEffect(() => {
-    if (group.current) {
+  React.useLayoutEffect(() => {
+    if (innerGroup.current) {
       function getCenterPoint(mesh) {
-        const box = new Box3().setFromObject(group.current);
+        const box = new Box3().setFromObject(mesh);
         const center = new Vector3();
         box.getCenter(center);
-        mesh.localToWorld(center);
+        // mesh.localToWorld(center);
         return center;
       }
-      const centerOfMesh1 = getCenterPoint(group.current).multiplyScalar(-1);
+      const centerOfGroup = getCenterPoint(innerGroup.current).multiplyScalar(-1);
       setOffset((oldOffset) => {
         if (oldOffset) {
           return oldOffset;
         }
-        return centerOfMesh1;
+        return centerOfGroup;
       });
     }
   }, []);
 
-  function isColliding({ hand }) {
-    const position = utils.getHandPosition(hand);
+  function isColliding({ pinchingController }) {
+    // do initial position check (if futher, don't check for collisions)
+    const position = pinchingController.position;
     const groupPosition = group.current.getWorldPosition(new Vector3());
 
     const box = new Box3().setFromObject(group.current);
 
     if (!box.containsPoint(position)) {
-      props.debug && console.log("IGNORED", position.distanceTo(groupPosition));
+      props.debug &&
+        console.log("IGNORED", position.distanceTo(groupPosition));
       return;
     }
 
-    const obb = new OBB(
-      new Vector3().setFromMatrixPosition(group.current.matrixWorld),
-      box.getSize(new Vector3()).multiply(group.current.scale).divideScalar(2),
-      new Matrix3().setFromMatrix4(
-        group.current.matrixWorld.clone().makeScale(1, 1, 1)
-      )
+    const boxSize = box.getSize(new Vector3());
+    const boxSizeObb = boxSize.clone().divideScalar(2);
+    const obbRotation = new Matrix3().setFromMatrix4(
+      group.current.matrixWorld.clone().makeScale(1, 1, 1)
     );
 
-    const matrix = utils.getHandRotationMatrix(hand);
+    const obb = new OBB(groupPosition, boxSizeObb, obbRotation);
 
-    const indexTip = hand.bones.find(
-      (bone) => bone.jointName === "index-finger-tip"
-    );
-    const thumbTip = hand.bones.find((bone) => bone.jointName === "thumb-tip");
-
-    const thumbOBB = new OBB(
-      indexTip.getWorldPosition(new Vector3()),
-      new Vector3(0.05, 0.05, 0.05).divideScalar(2),
-      new Matrix3().setFromMatrix4(matrix)
-    );
-    const indexOBB = new OBB(
-      thumbTip.getWorldPosition(new Vector3()),
-      new Vector3(0.05, 0.05, 0.05).divideScalar(2),
-      new Matrix3().setFromMatrix4(matrix)
-    );
-
-    return (
-      obb.intersectsOBB(thumbOBB, Number.EPSILON) &&
-      obb.intersectsOBB(indexOBB, Number.EPSILON)
-    );
+    return pinchingController.intersectsOBB(obb);
   }
+
+  const onChange = React.useCallback(({ isPinched }) => {}, []);
 
   return (
     <Pinch
-      onChange={({ isPinched }) => {
-        // setPinched(isPinched);
-      }}
+      onChange={onChange}
       isColliding={isColliding}
       ref={group}
       {...props}
       dispose={null}
     >
       {props.debug && <ShowWorldPosition target={group} />}
-      <group>
+      <group ref={innerGroup}>
         <mesh
           ref={meshRef1}
           position={offset}

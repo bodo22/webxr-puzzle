@@ -1,4 +1,5 @@
 import React from "react";
+import { Color } from "three";
 import { Canvas } from "@react-three/fiber";
 import { PerspectiveCamera, Preload } from "@react-three/drei";
 import { XR, Controllers, Hands } from "@react-three/xr";
@@ -13,6 +14,8 @@ export default function Scene({ children, ...props }) {
       onCreated={({ gl, xr, ...rest }) => {
         if (window.location.pathname === "/") {
           document.body.appendChild(CustomVRButton.createButton(gl));
+          rest.scene.background = new Color(0x555555);
+
           // if (gl?.xr?.setAnimationLoop) {
           //   console.log('setting setAnimationLoop')
           //   gl.xr.setAnimationLoop((time, frame) => {

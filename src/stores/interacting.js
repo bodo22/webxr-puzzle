@@ -2,6 +2,8 @@ import React from "react";
 import { create } from "zustand";
 import { combine, subscribeWithSelector } from "zustand/middleware";
 
+import { HandMotionController } from "@/utils/MotionController";
+
 const initialState = {
   hands: {
     left: undefined,
@@ -48,9 +50,10 @@ export function useHandEvent(type, callback) {
   React.useEffect(() => {
     const cleanups = Object.values(hands).map((hand) => {
       function eventHandler(event) {
-        const motionController = event.target.children.find(
+        const handMotionController = event.target.children.find(
           (child) => child.constructor.name === "OculusHandModel"
-        )?.motionController;
+        ).motionController;
+        const motionController = new HandMotionController(handMotionController);
         callbackRef.current({ motionController, ...event });
       }
 

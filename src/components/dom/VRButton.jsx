@@ -29,6 +29,8 @@ class VRButton {
       button.style.cursor = "pointer";
       button.style.left = "5vw";
       button.style.bottom = "5vh";
+      button.style.width = '20vw'
+      button.style.height = '40vh'
       // button.style.width = '90vw'
       // button.style.height = '90vh'
 
@@ -52,6 +54,13 @@ class VRButton {
           // be requested separately.)
 
           const sessionInit = {
+            requiredFeatures: [
+              // "local-floor",
+              // "bounded-floor",
+              // "hand-tracking",
+              // "layers",
+              // "dom-overlay",
+            ],
             optionalFeatures: [
               "local-floor",
               "bounded-floor",

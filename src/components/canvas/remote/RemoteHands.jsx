@@ -8,7 +8,7 @@ import useInteracting from "@/stores/interacting";
 
 import Axes from "@/components/canvas/debug/Axes";
 
-function RemoteHand({ hand, color, modelLeft, modelRight, handedness, index, debug }) {
+function RemoteHand({ hand, color, handedness, index, debug }) {
   const handModelRef = React.useRef();
   const handMeshModelRef = React.useRef();
   const { r, g, b } = color;
@@ -57,13 +57,7 @@ function RemoteHand({ hand, color, modelLeft, modelRight, handedness, index, deb
 
   return (
     <>
-      {createPortal(
-        <oculusHandModel
-          ref={handModelRef}
-          args={[hand, modelLeft, modelRight]}
-        />,
-        hand
-      )}
+      {createPortal(<oculusHandModel ref={handModelRef} args={[hand]} />, hand)}
       {debug && <Axes model={handModelRef.current?.motionController} />}
     </>
   );
