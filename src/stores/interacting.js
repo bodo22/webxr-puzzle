@@ -53,8 +53,8 @@ export function useHandEvent(type, callback) {
         const handMotionController = event.target.children.find(
           (child) => child.constructor.name === "OculusHandModel"
         ).motionController;
-        const motionController = new HandMotionController(handMotionController);
-        callbackRef.current({ motionController, ...event });
+        const pinchingController = new HandMotionController(handMotionController);
+        callbackRef.current({ pinchingController, ...event });
       }
 
       if (hand) {
