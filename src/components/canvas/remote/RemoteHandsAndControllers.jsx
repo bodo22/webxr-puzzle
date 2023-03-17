@@ -7,6 +7,11 @@ import RemoteHands from "./RemoteHands";
 import Crate from "@/components/canvas/Crate";
 import LiverArteries from "@/components/canvas/LiverArteries";
 
+const pieceComponentMapping = {
+  "my-fun-test-LiverArteries": LiverArteries,
+  "my-fun-test-crate": Crate,
+};
+
 function RemoteTarget({ target }) {
   return <primitive object={target} />;
 }
@@ -42,22 +47,15 @@ function RemoteXRControllers({ targets, pizzaPositions, index, userId }) {
 
 export default function RemoteHandsAndControllers({ pizzaPositions }) {
   const controllers = useSocket((state) => state.controllers);
+  const pieces = useSocket((state) => state.pieces);
   const users = useUsers();
 
   return (
     <>
-      <LiverArteries
-        debug={true}
-        name="my-fun-test-LiverArteries"
-        scale={0.5}
-        position={[-0.15, -0.2, -0.3]}
-      />
-      <Crate
-        debug={true}
-        name="my-fun-test-crate"
-        scale={0.3}
-        position={[-0.15, -0.2, -0.3]}
-      />
+      {pieces.map((pieceProps) => {
+        const MappedComponent = pieceComponentMapping[pieceProps.name];
+        return <MappedComponent key={pieceProps.name} {...pieceProps} />;
+      })}
       {users
         .map(({ userId }, index) => {
           const targets = controllers[userId];

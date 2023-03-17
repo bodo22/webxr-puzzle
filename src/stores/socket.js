@@ -15,6 +15,7 @@ const initialState = {
   userIdIndex: 0,
   users: [],
   handView: "Ego",
+  pieces: [],
 };
 
 const mutations = (set, get) => {
@@ -38,6 +39,9 @@ const mutations = (set, get) => {
     })
     .on("handViewChange", (event) => {
       set({ handView: event.type });
+    })
+    .on("piecesPropsChange", (pieces) => {
+      set({ pieces });
     })
     .on("handData", (data) => {
       const oldTargets = get().controllers?.[data.userId] || [];
@@ -117,7 +121,7 @@ const useSocket = create(
 export const useUsers = () => {
   const users = useSocket((state) => state.users);
 
-  return users
+  return users;
 };
 
 export default useSocket;
