@@ -5,6 +5,16 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>WebXR Puzzle: Play</title>
+    <script>
+      const script = document.createElement("script");
+      const scriptSrc =
+        window.location.protocol +
+        "//" +
+        window.location.hostname +
+        ":5175/target.js";
+      script.setAttribute("src", scriptSrc);
+      document.head.appendChild(script);
+    </script>
   </head>
   <body>
     <div id="root"></div>
