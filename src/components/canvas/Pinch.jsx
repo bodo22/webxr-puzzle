@@ -4,7 +4,7 @@ import { useXREvent } from "@react-three/xr";
 import { mergeRefs } from "react-merge-refs";
 import { Matrix4, Quaternion, Vector3 } from "three";
 
-import useSocket from "@/stores/socket";
+import useSocket, { useUsers } from "@/stores/socket";
 import useInteracting, { useHandEvent } from "@/stores/interacting";
 import {
   HandMotionController,
@@ -80,25 +80,16 @@ function useSetPinching(ref, selectOrPinchEnd) {
       const obj = ref?.current;
       const dataIsForThisObj = obj?.name === pinchData.name;
       if (dataIsForThisObj) {
-        if (
-          obj.userData.pinchStart &&
-          pinchData.pinchStart > obj.userData.pinchStart
-        ) {
-          // TODO: move this logic to server side (server decides: latest pinch wins)
-          // the remote pinch was triggered after the local, so cancel the local pinch
-          const { pinchedObjects } = useInteracting.getState();
-
-          const pinchingThisObject = Object.entries(pinchedObjects).find(
-            ([_, pinchedObject]) =>
-              pinchedObject && pinchedObject === ref.current.name
-          );
-          selectOrPinchEnd({ handedness: pinchingThisObject[0] });
+        if (obj.userData.pinchStart) {
+          // the server has decided that a remote pinch on this object
+          // is younger we can end the current local pinch
+          selectOrPinchEnd({ name: obj.name });
           return;
         }
         obj.matrix = new Matrix4();
         obj.matrix.elements = pinchData.matrix;
         obj.matrix.decompose(obj.position, obj.quaternion, obj.scale);
-        ref.current.updateWorldMatrix(false, true);
+        obj.updateWorldMatrix(false, true);
       }
     }
     socket.on("pinchData", handlePinchData);
@@ -109,34 +100,58 @@ function useSetPinching(ref, selectOrPinchEnd) {
 }
 
 const Pinch = React.forwardRef(
-  ({ children, onChange, isColliding, ...props }, passedRef) => {
+  (
+    {
+      children,
+      onChange,
+      isColliding,
+      initialPinchTransform,
+      boxHelperRef,
+      ...props
+    },
+    passedRef
+  ) => {
+    const userIdIndex = useSocket((state) => state.userIdIndex);
+    const users = useUsers();
+    const { r, g, b } = users[userIdIndex].color;
+
     const ref = React.useRef();
     const pinchingControllerRef = React.useRef();
     const previousTransformRef = React.useRef();
     const setPinchedObject = useInteracting((store) => store.setPinchedObject);
+    const unpinchObject = useInteracting((store) => store.unpinchObject);
 
-    function selectOrPinchStart({ handedness, pinchingController }) {
-      const colliding = isColliding({ pinchingController });
+    const selectOrPinchStart = React.useCallback(
+      ({ handedness, pinchingController }) => {
+        const colliding = isColliding({ pinchingController });
 
-      if (colliding) {
-        onChange({ isPinched: true });
-        const transform = pinchingController.transform;
-        previousTransformRef.current = transform.clone();
-        pinchingControllerRef.current = pinchingController;
-        ref.current.userData.pinchStart = Date.now();
-        setPinchedObject(handedness, ref.current.name);
-      }
-    }
+        if (colliding) {
+          onChange({ isPinched: true });
+          const transform = pinchingController.transform;
+          previousTransformRef.current = transform.clone();
+          pinchingControllerRef.current = pinchingController;
+          ref.current.userData.pinchStart = Date.now();
+          boxHelperRef?.current.material.color.setRGB(r, g, b);
+          setPinchedObject(handedness, ref.current.name);
+        }
+      },
+      [boxHelperRef, r, g, b, isColliding, onChange, setPinchedObject]
+    );
 
     const selectOrPinchEnd = React.useCallback(
-      ({ handedness }) => {
+      ({ handedness, name }) => {
         onChange({ isPinched: false });
         ref.current.userData.pinchStart = undefined;
         pinchingControllerRef.current = undefined;
         previousTransformRef.current = undefined;
-        setPinchedObject(handedness, undefined);
+        boxHelperRef?.current.material.color.set("blue");
+        if (handedness) {
+          setPinchedObject(handedness, undefined);
+        } else if (name) {
+          unpinchObject(name);
+        }
       },
-      [onChange, setPinchedObject]
+      [boxHelperRef, onChange, setPinchedObject, unpinchObject]
     );
 
     // for inline or remote hands
@@ -177,15 +192,15 @@ const Pinch = React.forwardRef(
     useUpdateGroup(ref, pinchingControllerRef, previousTransformRef);
     useSetPinching(ref, selectOrPinchEnd);
 
-    // React.useEffect(() => {
-    //   if (pinchingControllerRef.current) {
-    //     console.log("add obb", pinchingControllerRef.current.obb);
-    //     scene.add(pinchingControllerRef.current.obb);
-    //   }
-    // });
-
-    // console.log(!!pinchingControllerRef.current && pinchingControllerRef.current.target);
-    // useHelper(!!pinchingControllerRef.current && pinchingControllerRef.current.target, BoxHelper, "blue");
+    useEffect(() => {
+      const obj = ref.current;
+      if (initialPinchTransform) {
+        obj.matrix = new Matrix4();
+        obj.matrix.elements = initialPinchTransform.matrix;
+        obj.matrix.decompose(obj.position, obj.quaternion, obj.scale);
+        obj.updateWorldMatrix(false, true);
+      }
+    }, [initialPinchTransform]);
 
     return (
       <group ref={mergeRefs([passedRef, ref])} {...props}>
