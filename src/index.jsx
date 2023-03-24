@@ -1,6 +1,6 @@
 import React from "react";
 import { useXR } from "@react-three/xr";
-import Logo from "@/components/canvas/Logo";
+// import Logo from "@/components/canvas/Logo";
 import { useThree } from "@react-three/fiber";
 import RemoteHandsAndControllers from "@/components/canvas/remote/RemoteHandsAndControllers";
 import PizzaCircle from "@/components/canvas/PizzaCircle";
@@ -62,7 +62,7 @@ function MoveCamera({ pizzaPositions }) {
   }, [player, rotationY, position.x, position.y, position.z]);
 }
 
-const IndexCanvas = (props) => {
+const IndexCanvas = () => {
   const [pizzaPositions, setPizzaPositions] = React.useState([]);
 
   return (
@@ -74,7 +74,7 @@ const IndexCanvas = (props) => {
         setPizzaPositions={setPizzaPositions}
         pizzaPositions={pizzaPositions}
       />
-      <Logo scale={0.5} position-z={-5} />
+      {/* <Logo scale={0.5} position-z={-5} /> */}
     </>
   );
 };

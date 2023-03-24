@@ -1,5 +1,5 @@
-import { useGLTF } from "@react-three/drei";
 import React from "react";
+import { useGLTF } from "@react-three/drei";
 
 import Pinch from "./Pinch";
 import ShowWorldPosition from "./debug/ShowWorldPosition";
@@ -7,7 +7,7 @@ import { useIsColliding } from "./hooks";
 import { useIsObjectPinched } from "@/stores/interacting";
 export default function Crate(props) {
   const group = React.useRef();
-  const isColliding = useIsColliding(group, props.debug);
+  const isColliding = useIsColliding(group);
   const { nodes, materials } = useGLTF(
     "https://vazxmixjsiawhamofees.supabase.co/storage/v1/object/public/models/crate/model.gltf"
   );
@@ -29,7 +29,7 @@ export default function Crate(props) {
 
   return (
     <Pinch isColliding={isColliding} ref={group} {...props}>
-      {props.debug && <ShowWorldPosition target={group} />}
+      <ShowWorldPosition target={group} />
       <group>
         <mesh
           geometry={nodes.Cube013.geometry}

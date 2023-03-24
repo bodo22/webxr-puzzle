@@ -1,9 +1,10 @@
 import React from "react";
 import { DoubleSide, MathUtils, Vector3 } from "three";
 import { Text } from "@react-three/drei";
-import useSocket, { useUsers } from "@/stores/socket";
 import { formatRgb } from "culori";
 import { OrbitControls } from "@react-three/drei";
+
+import useSocket, { useUsers, useDebug } from "@/stores/socket";
 
 const radius = 0.5;
 
@@ -12,6 +13,7 @@ export default function PizzaCircle({ setPizzaPositions, pizzaPositions }) {
   const users = useUsers();
   const usersLength = users.length;
   const circleMeshRef = React.useRef();
+  const { pizzaGeo, pizzaNums } = useDebug();
 
   const circleSegments = usersLength < 3 ? 4 : usersLength;
   const thetaStart = MathUtils.degToRad(90);
@@ -39,7 +41,7 @@ export default function PizzaCircle({ setPizzaPositions, pizzaPositions }) {
           side={DoubleSide}
           wireframe
           transparent
-          opacity={1}
+          opacity={pizzaGeo ? 1 : 0}
         />
       </mesh>
       {pizzaPositions.map((position, index) => {
@@ -55,7 +57,7 @@ export default function PizzaCircle({ setPizzaPositions, pizzaPositions }) {
             <Text
               color={formatRgb(color)}
               material-transparent={true}
-              material-opacity={0.6}
+              material-opacity={pizzaNums ? 0.6 : 0}
               anchorX="center"
               anchorY="middle"
               fontSize={0.25}

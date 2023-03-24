@@ -14,12 +14,12 @@ export default function LiverArteries(props) {
   const obj2 = useLoader(OBJLoader, "/models/LiVR_Pat_ID4_Portal.obj");
   const meshRef1 = React.useRef();
   const meshRef2 = React.useRef();
-  const isColliding = useIsColliding(group, props.debug);
+  const isColliding = useIsColliding(group);
   const offset = useCenterObject(innerGroup);
 
   return (
     <Pinch isColliding={isColliding} ref={group} {...props}>
-      {props.debug && <ShowWorldPosition target={group} />}
+      <ShowWorldPosition target={group} />
       <group ref={innerGroup}>
         <mesh
           ref={meshRef1}

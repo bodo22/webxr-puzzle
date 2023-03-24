@@ -1,8 +1,10 @@
 import React from "react";
 import { Matrix3, Vector3, Box3 } from "three";
 import { OBB } from "three-stdlib";
+import { useDebug } from "@/stores/socket";
 
-function useIsColliding(group, debug) {
+function useIsColliding(group) {
+  const { collide } = useDebug();
   return React.useCallback(
     ({ pinchingController }) => {
       // do initial position check (if futher, don't check for collisions)
@@ -12,7 +14,7 @@ function useIsColliding(group, debug) {
       const box = new Box3().setFromObject(group.current);
 
       if (!box.containsPoint(position)) {
-        debug && console.log("IGNORED", position.distanceTo(groupPosition));
+        collide && console.log("IGNORED", position.distanceTo(groupPosition));
         return;
       }
 
@@ -26,7 +28,7 @@ function useIsColliding(group, debug) {
 
       return pinchingController.intersectsOBB(obb);
     },
-    [group, debug]
+    [group, collide]
   );
 }
 

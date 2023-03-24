@@ -3,14 +3,15 @@ import { OculusHandModel } from "three-stdlib";
 import { extend, createPortal } from "@react-three/fiber";
 
 import { fakeInputSourceFactory } from "@/utils";
-import useSocket, { useUsers } from "@/stores/socket";
+import useSocket, { useUsers, useDebug } from "@/stores/socket";
 import useInteracting from "@/stores/interacting";
 
 import Axes from "@/components/canvas/debug/Axes";
 
-function RemoteHand({ hand, color, handedness, index, debug }) {
+function RemoteHand({ hand, color, handedness, index }) {
   const handModelRef = React.useRef();
   const handMeshModelRef = React.useRef();
+  const { hands } = useDebug();
   const { r, g, b } = color;
 
   React.useLayoutEffect(() => {
@@ -41,8 +42,9 @@ function RemoteHand({ hand, color, handedness, index, debug }) {
   const noXRUsers = users.every(
     ({ isSessionSupported }) => !isSessionSupported
   );
-  const setHand = useInteracting((store) => store.setHand);
-  const noXRUserAndFirst = userIdIndex === 0 && index === 0 && noXRUsers;
+  const setHand = useInteracting((state) => state.setHand);
+  // const noXRUserAndFirst = userIdIndex === 0 && index === 0 && noXRUsers;
+  const noXRUserAndFirst = userIdIndex === index;
   React.useEffect(() => {
     // TODO: remove this if statement away & make it work agnostically for remote hands & own hands
     if (noXRUserAndFirst) {
@@ -58,7 +60,7 @@ function RemoteHand({ hand, color, handedness, index, debug }) {
   return (
     <>
       {createPortal(<oculusHandModel ref={handModelRef} args={[hand]} />, hand)}
-      {debug && <Axes model={handModelRef.current?.motionController} />}
+      {hands && <Axes model={handModelRef.current?.motionController} />}
     </>
   );
 }
@@ -98,7 +100,6 @@ export default function RemoteHands() {
             color={color}
             hand={target.hand}
             handedness={target.handedness}
-            // debug={true}
           />
         );
       });

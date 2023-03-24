@@ -2,10 +2,12 @@ import React from "react";
 import { useFrame } from "@react-three/fiber";
 import { Vector3 } from "three";
 import { useThree, createPortal } from "@react-three/fiber";
+import { useDebug } from "@/stores/socket";
 
 export default function ShowWorldPosition({ target }) {
   const ref = React.useRef();
   const scene = useThree((state) => state.scene);
+  const { piecesPos } = useDebug();
 
   useFrame(() => {
     if (target.current) {
@@ -15,6 +17,9 @@ export default function ShowWorldPosition({ target }) {
       }
     }
   });
+  if (!piecesPos) {
+    return null;
+  }
 
   return createPortal(
     <group>

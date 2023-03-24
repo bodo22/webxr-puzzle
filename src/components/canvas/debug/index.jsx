@@ -4,12 +4,14 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { Stats, GizmoHelper, GizmoViewport, Grid } from "@react-three/drei";
 import { useXR } from "@react-three/xr";
 import { HTMLMesh } from "three-stdlib";
+import { useDebug } from "@/stores/socket";
 
 export default function Debug() {
   const state = useThree((state) => state);
   const session = useXR((state) => state.session);
   const [statsMesh, setStatsMesh] = React.useState();
   const refSpace = React.useRef();
+  const { stats, grid, gizmo, center } = useDebug();
 
   useFrame((_, __, frame) => {
     statsMesh?.material?.map?.update();
@@ -46,33 +48,41 @@ export default function Debug() {
     statsMesh.position.y = 0.07;
     statsMesh.position.z = -0.3;
     statsMesh.material.depthTest = false;
+    statsMesh.material.opacity = stats ? 1 : 0;
+    statsMesh.material.tansparency = true;
   }
 
   return (
     <>
-      <Stats showPanel={0} className="stats" />
-      <GizmoHelper alignment="bottom-right" margin={[80, 80]}>
-        <GizmoViewport
-          axisColors={["red", "green", "blue"]}
-          labelColor="black"
+      {stats && <Stats showPanel={0} className="stats" />}
+      {gizmo && (
+        <GizmoHelper alignment="bottom-right" margin={[80, 80]}>
+          <GizmoViewport
+            axisColors={["red", "green", "blue"]}
+            labelColor="black"
+          />
+        </GizmoHelper>
+      )}
+      {grid && (
+        <Grid
+          cellSize={0.5}
+          cellThickness={0.75}
+          cellColor={"yellow"}
+          sectionSize={1}
+          sectionThickness={1.25}
+          sectionColor={"#2080ff"}
+          followCamera={true}
+          infiniteGrid={true}
+          fadeDistance={100}
+          fadeStrength={1}
         />
-      </GizmoHelper>
-      <Grid
-        cellSize={0.5}
-        cellThickness={0.75}
-        cellColor={"yellow"}
-        sectionSize={1}
-        sectionThickness={1.25}
-        sectionColor={"#2080ff"}
-        followCamera={true}
-        infiniteGrid={true}
-        fadeDistance={100}
-        fadeStrength={1}
-      />
-      <mesh>
-        <sphereGeometry args={[0.03, 64, 64]} />
-        <meshStandardMaterial color={"hotpink"} />
-      </mesh>
+      )}
+      {center && (
+        <mesh>
+          <sphereGeometry args={[0.03, 64, 64]} />
+          <meshStandardMaterial color={"hotpink"} />
+        </mesh>
+      )}
     </>
   );
 }

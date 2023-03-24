@@ -16,6 +16,7 @@ const initialState = {
   users: [],
   handView: "Ego",
   pieces: [],
+  debug: {},
 };
 
 const mutations = (set, get) => {
@@ -42,6 +43,9 @@ const mutations = (set, get) => {
     })
     .on("piecesPropsChange", (pieces) => {
       set({ pieces });
+    })
+    .on("debug", (debug) => {
+      set({ debug });
     })
     .on("handData", (data) => {
       const oldTargets = get().controllers?.[data.userId] || [];
@@ -119,9 +123,7 @@ const useSocket = create(
 );
 
 export const useUsers = () => {
-  const users = useSocket((state) => state.users);
-
-  return users;
+  return useSocket((state) => state.users);
 };
 
 export const useUser = (indexOrUserId) => {
@@ -134,5 +136,9 @@ export const useUser = (indexOrUserId) => {
   }
   return users[useIndex];
 };
+
+export function useDebug() {
+  return useSocket((state) => state.debug);
+}
 
 export default useSocket;

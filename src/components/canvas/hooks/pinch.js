@@ -3,10 +3,10 @@ import { useHelper } from "@react-three/drei";
 import { BoxHelper } from "three";
 import { formatRgb } from "culori";
 
-import { useUser } from "@/stores/socket";
+import { useDebug, useUser } from "@/stores/socket";
 
 import useInteracting, { useIsObjectPinched } from "@/stores/interacting";
-export function usePinch({ name, debug, isColliding }) {
+export function usePinch({ name, isColliding }) {
   const { color } = useUser();
   const ref = React.useRef({ userData: {} });
   const pinchingControllerRef = React.useRef();
@@ -14,7 +14,9 @@ export function usePinch({ name, debug, isColliding }) {
   const { unpinchObject, setPinchedObject } = useInteracting((state) => state);
   const isPinched = useIsObjectPinched(name);
   const helperColor = isPinched ? formatRgb(color) : "blue";
-  useHelper(debug && ref, BoxHelper, helperColor);
+  const { boundBoxes } = useDebug();
+
+  useHelper(boundBoxes && ref, BoxHelper, helperColor);
 
   const selectOrPinchStart = React.useCallback(
     ({ handedness, pinchingController }) => {
