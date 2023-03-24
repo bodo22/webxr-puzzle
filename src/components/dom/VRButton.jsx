@@ -8,6 +8,7 @@ class VRButton {
       async function onSessionStarted(session) {
         session.addEventListener("end", onSessionEnded);
 
+        // TODO: refactor to set react-xr useXR session
         await renderer.xr.setSession(session);
         button.textContent = "EXIT VR";
 
