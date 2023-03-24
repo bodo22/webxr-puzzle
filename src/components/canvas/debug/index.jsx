@@ -29,16 +29,23 @@ export default function Debug() {
   React.useEffect(() => {
     async function addStatsMesh() {
       const statsElement = document.getElementsByClassName("stats")[0];
-      if (session && statsElement && !state.scene.getObjectByName("stats")) {
+      let group;
+      if (session && statsElement) {
         const statsMesh = new HTMLMesh(statsElement);
         statsMesh.name = "stats";
-        const group = new Group();
+        group = new Group();
         group.add(statsMesh);
         state.scene.add(group);
         setStatsMesh(statsMesh);
         const xrReferenceSpace = await session.requestReferenceSpace("local");
         refSpace.current = xrReferenceSpace;
       }
+      return () => {
+        if (group) {
+          group.removeFromParent();
+          group?.dispose();
+        }
+      };
     }
     addStatsMesh();
   }, [state, session]);
@@ -54,7 +61,7 @@ export default function Debug() {
 
   return (
     <>
-      {stats && <Stats showPanel={0} className="stats" />}
+      <Stats showPanel={stats ? 0 : -1} className="stats" />
       {gizmo && (
         <GizmoHelper alignment="bottom-right" margin={[80, 80]}>
           <GizmoViewport
