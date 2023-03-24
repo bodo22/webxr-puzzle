@@ -28,11 +28,11 @@ const mutations = (set, get) => {
         },
       });
     },
-    unpinchObject(object) {
+    unpinchObject(name) {
       const { pinchedObjects } = get();
 
       const objectToUnpinch = Object.entries(pinchedObjects).find(
-        ([_, po]) => po && po === object
+        ([_, po]) => po && po === name
       );
       if (objectToUnpinch) {
         set({
@@ -86,6 +86,11 @@ export function useHandEvent(type, callback) {
 
     return () => cleanups.forEach((cleanup) => cleanup());
   }, [type, hands, callbackRef]);
+}
+
+export function useIsObjectPinched(name) {
+  const pinchedObjects = useInteracting((store) => store.pinchedObjects);
+  return Object.values(pinchedObjects).some((po) => po && po === name);
 }
 
 export default useInteracting;

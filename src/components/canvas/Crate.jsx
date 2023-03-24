@@ -1,7 +1,5 @@
 import { useGLTF } from "@react-three/drei";
 import React, { useEffect, useRef, useState } from "react";
-import { BoxHelper } from "three";
-import { useHelper } from "@react-three/drei";
 
 import Pinch from "./Pinch";
 import ShowWorldPosition from "./debug/ShowWorldPosition";
@@ -14,7 +12,6 @@ export default function Crate(props) {
     "https://vazxmixjsiawhamofees.supabase.co/storage/v1/object/public/models/crate/model.gltf"
   );
 
-  const boxHelperRef = useHelper(props.debug && group, BoxHelper, "blue");
 
   const materialsRef = useRef(materials);
   const [isPinched, setPinched] = useState(false);
@@ -51,9 +48,7 @@ export default function Crate(props) {
       onChange={onChange}
       isColliding={isColliding}
       ref={group}
-      boxHelperRef={boxHelperRef}
       {...props}
-      dispose={null}
     >
       {props.debug && <ShowWorldPosition target={group} />}
       <group>

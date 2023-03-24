@@ -1,8 +1,6 @@
 import React from "react";
-import { BoxHelper } from "three";
 import { OBJLoader } from "three-stdlib";
 import { useLoader } from "@react-three/fiber";
-import { useHelper } from "@react-three/drei";
 
 import Pinch from "./Pinch";
 import { useIsColliding, useCenterObject } from "./hooks";
@@ -16,7 +14,6 @@ export default function LiverArteries(props) {
   const obj2 = useLoader(OBJLoader, "/models/LiVR_Pat_ID4_Portal.obj");
   const meshRef1 = React.useRef();
   const meshRef2 = React.useRef();
-  const boxHelperRef = useHelper(props.debug && group, BoxHelper, "blue");
   const isColliding = useIsColliding(group, props.debug);
   const offset = useCenterObject(innerGroup);
 
@@ -27,9 +24,7 @@ export default function LiverArteries(props) {
       onChange={onChange}
       isColliding={isColliding}
       ref={group}
-      boxHelperRef={boxHelperRef}
       {...props}
-      dispose={null}
     >
       {props.debug && <ShowWorldPosition target={group} />}
       <group ref={innerGroup}>
