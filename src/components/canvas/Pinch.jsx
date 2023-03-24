@@ -1,12 +1,10 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useFrame } from "@react-three/fiber";
-import { useHelper } from "@react-three/drei";
 import { useXREvent } from "@react-three/xr";
 import { mergeRefs } from "react-merge-refs";
-import { Matrix4, Quaternion, Vector3, BoxHelper } from "three";
-import { formatRgb } from "culori";
+import { Matrix4, Quaternion, Vector3 } from "three";
 
-import useSocket, { useUsers } from "@/stores/socket";
+import useSocket from "@/stores/socket";
 import useInteracting, {
   useHandEvent,
   useIsObjectPinched,
@@ -15,6 +13,7 @@ import {
   HandMotionController,
   TriggerMotionController,
 } from "@/utils/MotionController";
+import { usePinch } from "./hooks/pinch";
 
 function useUpdateGroup(ref, pinchingControllerRef, previousTransformRef) {
   const sendPinchData = useSocket((state) => state.sendPinchData);
@@ -72,7 +71,7 @@ function useListenForRemotePinch(name, ref, selectOrPinchEnd) {
   const socket = useSocket((state) => state.socket);
   const isPinched = useIsObjectPinched(name);
 
-  useEffect(() => {
+  React.useEffect(() => {
     function handlePinchData(pinchData) {
       const obj = ref?.current;
       const dataIsForThisObj = name === pinchData.name;
@@ -96,99 +95,56 @@ function useListenForRemotePinch(name, ref, selectOrPinchEnd) {
   }, [socket, name, isPinched, ref, selectOrPinchEnd]);
 }
 
-const Pinch = React.forwardRef(
-  (
-    { children, onChange, isColliding, initialPinchTransform, ...props },
-    passedRef
-  ) => {
-    const userIdIndex = useSocket((state) => state.userIdIndex);
-    const users = useUsers();
-    const { color } = users[userIdIndex];
+const Pinch = React.forwardRef(({ children, ...props }, passedRef) => {
+  const {
+    selectOrPinchEnd,
+    selectOrPinchStart,
+    ref,
+    pinchingControllerRef,
+    previousTransformRef,
+  } = usePinch(props);
 
-    const ref = React.useRef();
-    const pinchingControllerRef = React.useRef();
-    const previousTransformRef = React.useRef();
-    const setPinchedObject = useInteracting((store) => store.setPinchedObject);
-    const unpinchObject = useInteracting((store) => store.unpinchObject);
-    const isPinched = useIsObjectPinched(props.name);
-    const helperColor = isPinched ? formatRgb(color) : "blue";
-    useHelper(props.debug && ref, BoxHelper, helperColor);
+  // for XR hands
+  useXREvent("selectstart", ({ nativeEvent, target }) => {
+    const handModelController = target.hand.children.find(
+      (child) => child.constructor.name === "OculusHandModel"
+    )?.handModelController;
 
-    const selectOrPinchStart = React.useCallback(
-      ({ handedness, pinchingController }) => {
-        const colliding = isColliding({ pinchingController });
-
-        if (colliding) {
-          onChange({ isPinched: true });
-          const transform = pinchingController.transform;
-          previousTransformRef.current = transform.clone();
-          pinchingControllerRef.current = pinchingController;
-          ref.current.userData.pinchStart = Date.now();
-          setPinchedObject(handedness, ref.current.name);
-        }
-      },
-      [isColliding, onChange, setPinchedObject]
-    );
-
-    const selectOrPinchEnd = React.useCallback(
-      ({ handedness, name }) => {
-        onChange({ isPinched: false });
-        ref.current.userData.pinchStart = undefined;
-        pinchingControllerRef.current = undefined;
-        previousTransformRef.current = undefined;
-        if (handedness) {
-          setPinchedObject(handedness, undefined);
-        } else if (name) {
-          unpinchObject(name);
-        }
-      },
-      [onChange, setPinchedObject, unpinchObject]
-    );
-
-    // for inline or remote hands
-    useHandEvent("pinchend", selectOrPinchEnd);
-
-    // for inline or remote hands
-    useHandEvent("pinchstart", selectOrPinchStart);
-
-    // for XR hands
-    useXREvent("selectstart", ({ nativeEvent, target }) => {
-      const oculusHandModel = target.hand.children.find(
-        (child) => child.constructor.name === "OculusHandModel"
-      );
-
-      let pinchingController;
-      if (oculusHandModel.motionController) {
-        pinchingController = new HandMotionController(
-          oculusHandModel.motionController
-        );
-      } else {
-        pinchingController = new TriggerMotionController(target.controller);
-      }
-      selectOrPinchStart({
-        nativeEvent,
-        handedness: nativeEvent.data.handedness,
-        pinchingController,
-      });
+    let pinchingController;
+    if (handModelController) {
+      pinchingController = new HandMotionController(handModelController);
+    } else {
+      pinchingController = new TriggerMotionController(target.controller);
+    }
+    selectOrPinchStart({
+      nativeEvent,
+      handedness: nativeEvent.data.handedness,
+      pinchingController,
     });
+  });
 
-    // for XR hands
-    useXREvent("selectend", ({ nativeEvent }) => {
-      selectOrPinchEnd({
-        nativeEvent,
-        handedness: nativeEvent.data.handedness,
-      });
+  // for XR hands
+  useXREvent("selectend", ({ nativeEvent }) => {
+    selectOrPinchEnd({
+      nativeEvent,
+      handedness: nativeEvent.data.handedness,
     });
+  });
 
-    useUpdateGroup(ref, pinchingControllerRef, previousTransformRef);
-    useListenForRemotePinch(props.name, ref, selectOrPinchEnd);
+  // for inline or remote hands
+  useHandEvent("pinchstart", selectOrPinchStart);
 
-    return (
-      <group ref={mergeRefs([passedRef, ref])} {...props}>
-        {children}
-      </group>
-    );
-  }
-);
+  // for inline or remote hands
+  useHandEvent("pinchend", selectOrPinchEnd);
+
+  useUpdateGroup(ref, pinchingControllerRef, previousTransformRef);
+  useListenForRemotePinch(props.name, ref, selectOrPinchEnd);
+
+  return (
+    <group ref={mergeRefs([passedRef, ref])} {...props}>
+      {children}
+    </group>
+  );
+});
 
 export default Pinch;

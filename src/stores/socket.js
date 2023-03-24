@@ -124,4 +124,15 @@ export const useUsers = () => {
   return users;
 };
 
+export const useUser = (indexOrUserId) => {
+  const userIdIndex = useSocket((state) => state.userIdIndex);
+  const users = useUsers();
+  const useIndex =
+    typeof indexOrUserId === "number" ? indexOrUserId : userIdIndex;
+  if (typeof indexOrUserId === "string") {
+    return users.find(({ userId }) => userId === indexOrUserId);
+  }
+  return users[useIndex];
+};
+
 export default useSocket;

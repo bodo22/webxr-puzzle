@@ -3,6 +3,7 @@ import { create } from "zustand";
 import { combine, subscribeWithSelector } from "zustand/middleware";
 
 import { HandMotionController } from "@/utils/MotionController";
+import useSocket from "@/stores/socket";
 
 const initialState = {
   hands: {
@@ -16,6 +17,18 @@ const initialState = {
 };
 
 const mutations = (set, get) => {
+
+  const {socket} = useSocket.getState()
+
+  socket.on('reset', () => {
+    set({
+      pinchedObjects: {
+        left: undefined,
+        right: undefined,
+      },
+    });
+  })
+
   return {
     setHand(handedness, hand) {
       set({ hands: { ...get().hands, [handedness]: hand } });
@@ -50,17 +63,8 @@ const useInteracting = create(
   subscribeWithSelector(combine(initialState, mutations))
 );
 
-export function useCallbackRef(fn) {
-  const ref = React.useRef(fn);
-  React.useEffect(() => {
-    ref.current = fn;
-  }, [fn]);
-  return ref;
-}
-
 export function useHandEvent(type, callback) {
-  const callbackRef = useCallbackRef(callback);
-  const hands = useInteracting((store) => store.hands);
+  const hands = useInteracting((state) => state.hands);
 
   React.useEffect(() => {
     const cleanups = Object.values(hands).map((hand) => {
@@ -71,25 +75,21 @@ export function useHandEvent(type, callback) {
         const pinchingController = new HandMotionController(
           handMotionController
         );
-        callbackRef.current({ pinchingController, ...event });
+        callback({ pinchingController, ...event });
       }
 
-      if (hand) {
-        hand.addEventListener(type, eventHandler);
-      }
+      hand && hand.addEventListener(type, eventHandler);
       return () => {
-        if (hand) {
-          hand.removeEventListener(type, eventHandler);
-        }
+        hand && hand.removeEventListener(type, eventHandler);
       };
     });
 
     return () => cleanups.forEach((cleanup) => cleanup());
-  }, [type, hands, callbackRef]);
+  }, [type, hands, callback]);
 }
 
 export function useIsObjectPinched(name) {
-  const pinchedObjects = useInteracting((store) => store.pinchedObjects);
+  const pinchedObjects = useInteracting((state) => state.pinchedObjects);
   return Object.values(pinchedObjects).some((po) => po && po === name);
 }
 

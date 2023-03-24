@@ -1,33 +1,21 @@
 import { useGLTF } from "@react-three/drei";
-import React, { useEffect, useRef, useState } from "react";
+import React from "react";
 
 import Pinch from "./Pinch";
 import ShowWorldPosition from "./debug/ShowWorldPosition";
 import { useIsColliding } from "./hooks";
-
+import { useIsObjectPinched } from "@/stores/interacting";
 export default function Crate(props) {
-  const group = useRef();
+  const group = React.useRef();
   const isColliding = useIsColliding(group, props.debug);
   const { nodes, materials } = useGLTF(
     "https://vazxmixjsiawhamofees.supabase.co/storage/v1/object/public/models/crate/model.gltf"
   );
 
+  const materialsRef = React.useRef(materials);
+  const isPinched = useIsObjectPinched(props.name);
 
-  const materialsRef = useRef(materials);
-  const [isPinched, setPinched] = useState(false);
-
-  useEffect(() => {
-    materialsRef.current = Object.values(materials).reduce(
-      (object, material) => {
-        object[material.name] = material.clone();
-        material.metalness = 0.5;
-        return object;
-      },
-      {}
-    );
-  }, [materials]);
-
-  useEffect(() => {
+  React.useEffect(() => {
     if (isPinched) {
       Object.values(materialsRef.current).forEach((material) => {
         material.metalness = 0.1;
@@ -39,17 +27,8 @@ export default function Crate(props) {
     }
   }, [isPinched]);
 
-  const onChange = React.useCallback(({ isPinched }) => {
-    setPinched(isPinched);
-  }, []);
-
   return (
-    <Pinch
-      onChange={onChange}
-      isColliding={isColliding}
-      ref={group}
-      {...props}
-    >
+    <Pinch isColliding={isColliding} ref={group} {...props}>
       {props.debug && <ShowWorldPosition target={group} />}
       <group>
         <mesh

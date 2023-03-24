@@ -17,15 +17,8 @@ export default function LiverArteries(props) {
   const isColliding = useIsColliding(group, props.debug);
   const offset = useCenterObject(innerGroup);
 
-  const onChange = React.useCallback(({ isPinched }) => {}, []);
-
   return (
-    <Pinch
-      onChange={onChange}
-      isColliding={isColliding}
-      ref={group}
-      {...props}
-    >
+    <Pinch isColliding={isColliding} ref={group} {...props}>
       {props.debug && <ShowWorldPosition target={group} />}
       <group ref={innerGroup}>
         <mesh
