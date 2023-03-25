@@ -41,32 +41,33 @@ export default function PizzaCircle({ setPizzaPositions, pizzaPositions }) {
           side={DoubleSide}
           wireframe
           transparent
-          opacity={pizzaGeo ? 1 : 0}
+          visible={pizzaGeo}
         />
       </mesh>
-      {pizzaPositions.map((position, index) => {
-        const color = users[index]?.color;
-        return (
-          <group
-            position={position}
-            rotation-y={MathUtils.degToRad(
-              userIdIndex * -(360 / (users.length === 2 ? 4 : users.length))
-            )}
-            key={`${circleSegments}-index-position-for-${index}`}
-          >
-            <Text
-              color={formatRgb(color)}
-              material-transparent={true}
-              material-opacity={pizzaNums ? 0.6 : 0}
-              anchorX="center"
-              anchorY="middle"
-              fontSize={0.25}
+      {pizzaNums &&
+        pizzaPositions.map((position, index) => {
+          const color = users[index]?.color;
+          return (
+            <group
+              position={position}
+              rotation-y={MathUtils.degToRad(
+                userIdIndex * -(360 / (users.length === 2 ? 4 : users.length))
+              )}
+              key={`${circleSegments}-index-position-for-${index}`}
             >
-              {index}
-            </Text>
-          </group>
-        );
-      })}
+              <Text
+                color={formatRgb(color)}
+                material-transparent={true}
+                material-opacity={0.6}
+                anchorX="center"
+                anchorY="middle"
+                fontSize={0.25}
+              >
+                {index}
+              </Text>
+            </group>
+          );
+        })}
       <OrbitControls target={[0, 0, -radius]} />
     </>
   );

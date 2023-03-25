@@ -1,11 +1,13 @@
 import React from "react";
 import { MathUtils } from "three";
+import { Select } from "@react-three/postprocessing";
 
 import useSocket, { useUsers } from "@/stores/socket";
 // import RemoteControllers from "./RemoteControllers";
 import RemoteHands from "./RemoteHands";
 import Crate from "@/components/canvas/Crate";
 import LiverArteries from "@/components/canvas/LiverArteries";
+import { useIsObjectPinched } from "@/stores/interacting";
 
 const pieceComponentMapping = {
   "my-fun-test-LiverArteries": LiverArteries,
@@ -45,6 +47,16 @@ function RemoteXRControllers({ targets, pizzaPositions, index, userId }) {
   );
 }
 
+function SelectablePuzzlePiece(props) {
+  const isPinched = useIsObjectPinched(props.name);
+  const MappedComponent = pieceComponentMapping[props.name];
+  return (
+    <Select enabled={isPinched}>
+      <MappedComponent key={props.name} {...props} />
+    </Select>
+  );
+}
+
 export default function RemoteHandsAndControllers({ pizzaPositions }) {
   const controllers = useSocket((state) => state.controllers);
   const pieces = useSocket((state) => state.pieces);
@@ -52,9 +64,8 @@ export default function RemoteHandsAndControllers({ pizzaPositions }) {
 
   return (
     <>
-      {pieces.map((pieceProps) => {
-        const MappedComponent = pieceComponentMapping[pieceProps.name];
-        return <MappedComponent key={pieceProps.name} {...pieceProps} />;
+      {pieces.map((props) => {
+        return <SelectablePuzzlePiece key={props.key ?? props.name} {...props} />;
       })}
       {users
         .map(({ userId }, index) => {
