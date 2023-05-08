@@ -8,9 +8,17 @@ import { useIsColliding } from "./hooks";
 export default function Crate(props) {
   const group = React.useRef();
   const isColliding = useIsColliding(group);
-  const { nodes, materials } = useGLTF(
-    "https://vazxmixjsiawhamofees.supabase.co/storage/v1/object/public/models/crate/model.gltf"
-  );
+  const { nodes, materials } = useGLTF("models/crate/model.gltf", "/draco/");
+
+  const materialsRef = React.useRef(materials);
+
+  React.useEffect(() => {
+    Object.values(materialsRef.current).forEach((material) => {
+      // material.colorWrite = false;
+      // material.transparent = true;
+      // material.opacity = 0;
+    });
+  }, []);
 
   return (
     <Pinch isColliding={isColliding} ref={group} {...props}>
@@ -29,6 +37,4 @@ export default function Crate(props) {
   );
 }
 
-useGLTF.preload(
-  "https://vazxmixjsiawhamofees.supabase.co/storage/v1/object/public/models/crate/model.gltf"
-);
+useGLTF.preload("/models/crate/model.gltf", "/draco/");
