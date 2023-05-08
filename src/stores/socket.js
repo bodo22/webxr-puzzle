@@ -132,9 +132,9 @@ export const useUser = (indexOrUserId) => {
   const useIndex =
     typeof indexOrUserId === "number" ? indexOrUserId : userIdIndex;
   if (typeof indexOrUserId === "string") {
-    return users.find(({ userId }) => userId === indexOrUserId);
+    return users.find(({ userId }) => userId === indexOrUserId) ?? {};
   }
-  return users[useIndex];
+  return users?.[useIndex] ?? {};
 };
 
 export function useDebug() {

@@ -5,6 +5,7 @@ import { Select } from "@react-three/postprocessing";
 import useSocket, { useUsers } from "@/stores/socket";
 // import RemoteControllers from "./RemoteControllers";
 import RemoteHands from "./RemoteHands";
+import GenericGltf from "@/components/canvas/GenericGltf";
 import Crate from "@/components/canvas/Crate";
 import LiverArteries from "@/components/canvas/LiverArteries";
 import { useIsObjectPinched } from "@/stores/interacting";
@@ -50,11 +51,16 @@ function RemoteXRControllers({ targets, pizzaPositions, index, userId }) {
 function SelectablePuzzlePiece(props) {
   const isPinched = useIsObjectPinched(props.name);
   const MappedComponent = pieceComponentMapping[props.name];
-  return (
-    <Select enabled={isPinched}>
-      <MappedComponent key={props.name} {...props} />
-    </Select>
-  );
+  let component;
+
+  if (typeof MappedComponent === "string") {
+    component = (
+      <GenericGltf key={props.name} gltfPath={MappedComponent} {...props} />
+    );
+  } else {
+    component = <MappedComponent key={props.name} {...props} />;
+  }
+  return <Select enabled={isPinched}>{component}</Select>;
 }
 
 export default function RemoteHandsAndControllers({ pizzaPositions }) {
@@ -65,7 +71,9 @@ export default function RemoteHandsAndControllers({ pizzaPositions }) {
   return (
     <>
       {pieces.map((props) => {
-        return <SelectablePuzzlePiece key={props.key ?? props.name} {...props} />;
+        return (
+          <SelectablePuzzlePiece key={props.key ?? props.name} {...props} />
+        );
       })}
       {users
         .map(({ userId }, index) => {

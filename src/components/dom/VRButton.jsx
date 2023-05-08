@@ -66,7 +66,7 @@ class VRButton {
               "local-floor",
               "bounded-floor",
               "hand-tracking",
-              "layers",
+              // "layers",
               // "dom-overlay",
             ],
             // domOverlay: {
