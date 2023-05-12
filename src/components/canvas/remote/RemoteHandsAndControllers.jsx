@@ -49,7 +49,7 @@ function RemoteXRControllers({ targets, pizzaPositions, index, userId }) {
 }
 
 function SelectablePuzzlePiece(props) {
-  const isPinched = useIsObjectPinched(props.name);
+  const isPinched = !!useIsObjectPinched(props.name);
   const MappedComponent = pieceComponentMapping[props.name];
   let component;
 
@@ -70,11 +70,13 @@ export default function RemoteHandsAndControllers({ pizzaPositions }) {
 
   return (
     <>
-      {pieces.map((props) => {
-        return (
-          <SelectablePuzzlePiece key={props.key ?? props.name} {...props} />
-        );
-      })}
+      {pieces
+        .filter(({ render }) => !!render)
+        .map((props) => {
+          return (
+            <SelectablePuzzlePiece key={props.key ?? props.name} {...props} />
+          );
+        })}
       {users
         .map(({ userId }, index) => {
           const targets = controllers[userId];

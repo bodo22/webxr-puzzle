@@ -5,6 +5,8 @@ import { combine, subscribeWithSelector } from "zustand/middleware";
 import { HandMotionController } from "@/utils/MotionController";
 import useSocket from "@/stores/socket";
 
+const initialGesture = "default";
+
 const initialState = {
   hands: {
     left: undefined,
@@ -14,20 +16,23 @@ const initialState = {
     left: undefined,
     right: undefined,
   },
+  gestures: {
+    left: initialGesture,
+    right: initialGesture,
+  },
 };
 
 const mutations = (set, get) => {
+  const { socket } = useSocket.getState();
 
-  const {socket} = useSocket.getState()
-
-  socket.on('reset', () => {
+  socket.on("reset", () => {
     set({
       pinchedObjects: {
         left: undefined,
         right: undefined,
       },
     });
-  })
+  });
 
   return {
     setHand(handedness, hand) {
@@ -41,17 +46,24 @@ const mutations = (set, get) => {
         },
       });
     },
-    unpinchObject(name) {
-      const { pinchedObjects } = get();
-
-      const objectToUnpinch = Object.entries(pinchedObjects).find(
-        ([_, po]) => po && po === name
-      );
-      if (objectToUnpinch) {
+    startGesture(handedness, gesture) {
+      set({
+        gestures: {
+          ...get().gestures,
+          [handedness]: gesture,
+        },
+      });
+    },
+    endGesture(handedness, gesture) {
+      if (get().gestures[handedness] === gesture) {
+        // set back to initialGesture, only if it hasn't been overriden in the meantime
+        // AKA it's still the same gesture
+        // assumption: on the same hand, a gesture can't be triggered twice without
+        // being ended between the triggers
         set({
-          pinchedObjects: {
-            ...get().pinchedObjects,
-            [objectToUnpinch[0]]: undefined,
+          gestures: {
+            ...get().gestures,
+            [handedness]: initialGesture,
           },
         });
       }
@@ -90,7 +102,9 @@ export function useHandEvent(type, callback) {
 
 export function useIsObjectPinched(name) {
   const pinchedObjects = useInteracting((state) => state.pinchedObjects);
-  return Object.values(pinchedObjects).some((po) => po && po === name);
+  return Object.entries(pinchedObjects).find(
+    ([handedness, po]) => po && po === name
+  );
 }
 
 export default useInteracting;

@@ -69,17 +69,17 @@ function useUpdateGroup(ref, pinchingControllerRef, previousTransformRef) {
 
 function useListenForRemotePinch(name, ref, selectOrPinchEnd) {
   const socket = useSocket((state) => state.socket);
-  const isPinched = useIsObjectPinched(name);
+  const pinched = useIsObjectPinched(name);
 
   React.useEffect(() => {
     function handlePinchData(pinchData) {
       const obj = ref?.current;
       const dataIsForThisObj = name === pinchData.name;
       if (dataIsForThisObj) {
-        if (isPinched) {
+        if (pinched) {
           // the server has decided that a remote pinch on this object
           // is younger we can end the current local pinch
-          selectOrPinchEnd({ name });
+          selectOrPinchEnd({ handedess: pinched[0] });
           return;
         }
         obj.matrix = new Matrix4();
@@ -92,7 +92,7 @@ function useListenForRemotePinch(name, ref, selectOrPinchEnd) {
     return () => {
       socket.off("pinchData", handlePinchData);
     };
-  }, [socket, name, isPinched, ref, selectOrPinchEnd]);
+  }, [socket, name, pinched, ref, selectOrPinchEnd]);
 }
 
 const Pinch = React.forwardRef(({ children, ...props }, passedRef) => {
@@ -108,7 +108,7 @@ const Pinch = React.forwardRef(({ children, ...props }, passedRef) => {
   useXREvent("selectstart", ({ nativeEvent, target }) => {
     const handModelController = target.hand.children.find(
       (child) => child.constructor.name === "OculusHandModel"
-    )?.handModelController;
+    )?.handModelController; // this should be ?.motionController, not sure where this comes from
 
     let pinchingController;
     if (handModelController) {
@@ -131,10 +131,10 @@ const Pinch = React.forwardRef(({ children, ...props }, passedRef) => {
     });
   });
 
-  // for inline or remote hands
+  // for inline or remote hands, only for testing
   useHandEvent("pinchstart", selectOrPinchStart);
-
-  // for inline or remote hands
+  
+  // for inline or remote hands, only for testing
   useHandEvent("pinchend", selectOrPinchEnd);
 
   useUpdateGroup(ref, pinchingControllerRef, previousTransformRef);

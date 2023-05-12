@@ -50,12 +50,12 @@ const mutations = (set, get) => {
     .on("handData", (data) => {
       const oldTargets = get().controllers?.[data.userId] || [];
       const newTargets = oldTargets.reduce((prev, target) => {
-        if (data.handData[target.handedness]) {
+        if (data.joints?.[target.handedness]) {
           prev.push(target);
         }
         return prev;
       }, []);
-      Object.entries(data.handData).forEach(([handedness, handData]) => {
+      data.joints && Object.entries(data.joints).forEach(([handedness, joints]) => {
         let target = newTargets.find(
           ({ handedness: targetHandedness }) => handedness === targetHandedness
         );
@@ -70,7 +70,7 @@ const mutations = (set, get) => {
           session: { visibilityState: "visible" },
           getPose: () => null,
           getJointPose: (inputjoint) => {
-            const jointPose = handData?.[inputjoint?.jointName];
+            const jointPose = joints?.[inputjoint?.jointName];
             if (!jointPose) {
               return null;
             }
@@ -103,7 +103,7 @@ const mutations = (set, get) => {
     });
 
   function emitHandData(handData) {
-    socket.emit("handData", { userId: get().userId, handData: handData });
+    socket.emit("handData", { userId: get().userId, ...handData });
   }
   function emitPinchData(pinchData) {
     socket.emit("pinchData", { userId: get().userId, ...pinchData });
