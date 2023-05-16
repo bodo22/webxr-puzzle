@@ -11,6 +11,10 @@ export default class XRController extends THREE.Group {
     this.controller = this.webXRController.getTargetRaySpace();
     this.grip = this.webXRController.getGripSpace();
     this.hand = this.webXRController.getHandSpace();
+    const geometry = new THREE.SphereGeometry(0.05, 32, 16);
+    const material = new THREE.MeshStandardMaterial();
+    this.blob = new THREE.Mesh(geometry, material);
+    this.blob.visible = false;
 
     this.grip.userData.name = "grip";
     this.controller.userData.name = "controller";
@@ -41,8 +45,68 @@ export default class XRController extends THREE.Group {
     this.dispatchEvent(event);
   }
 
+  updateVirtual(joints, fakeInputSource) {
+    const fakeFrame = {
+      session: { visibilityState: "visible" },
+      getPose: () => null,
+      getJointPose: (inputjoint) => {
+        const jointPose = joints?.[inputjoint?.jointName];
+        if (!jointPose) {
+          return null;
+        }
+        return {
+          transform: { matrix: jointPose.transformMatrix },
+          radius: jointPose.radius,
+        };
+      },
+    };
+    const fakeReferenceSpace = "local";
+    this.lastXRUpdate = Date.now();
+    this.webXRController.update(fakeInputSource, fakeFrame, fakeReferenceSpace);
+  }
+
+  update(joints, fakeInputSource, fidelity) {
+    switch (fidelity?.level) {
+      case "none": {
+        this.hand.visible = false;
+        this.blob.visible = false;
+        break;
+      }
+      case "blob": {
+        const matrixArray = joints?.[fidelity.blobJoint]?.transformMatrix;
+        if (matrixArray) {
+          const b = this.blob;
+          b.matrix.fromArray(matrixArray);
+          b.matrix.decompose(b.position, b.rotation, b.scale);
+        } else {
+          console.warn("matrixArray not defined", { joints, fidelity });
+        }
+        this.hand.visible = false;
+        this.blob.visible = true;
+        break;
+      }
+      case "gesture": {
+        console.log("TODO gesture!");
+        this.blob.visible = false;
+        this.hand.visible = true;
+        break;
+      }
+      case "virtual": {
+        this.updateVirtual(joints, fakeInputSource);
+        this.blob.visible = false;
+        this.hand.visible = true;
+        break;
+      }
+      default: {
+        console.warn("fidelity unknown", joints, fidelity);
+        break;
+      }
+    }
+  }
+
   dispose() {
     this.controller.removeEventListener("connected", this._onConnected);
     this.controller.removeEventListener("disconnected", this._onDisconnected);
+    this.blob.dispose();
   }
 }

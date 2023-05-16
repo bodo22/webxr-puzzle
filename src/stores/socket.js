@@ -19,16 +19,21 @@ const initialState = {
   debug: {},
 };
 
+const adminStateEvents = ["userId", "handView", "pieces", "debug"];
+
 const mutations = (set, get) => {
+  adminStateEvents.forEach((eventName) => {
+    socket.on(eventName, (object) => {
+      set({ [eventName]: object });
+    });
+  });
+
   socket
     .on("connect", () => {
       set({ ready: true });
     })
     .on("disconnect", () => {
       set({ ready: false });
-    })
-    .on("userId", (userId) => {
-      set({ userId });
     })
     .on("userUpdate", (newUsers) => {
       const userId = get().userId;
@@ -38,15 +43,6 @@ const mutations = (set, get) => {
       }
       set({ users: newUsers, userIdIndex });
     })
-    .on("handViewChange", (event) => {
-      set({ handView: event.type });
-    })
-    .on("piecesPropsChange", (pieces) => {
-      set({ pieces });
-    })
-    .on("debug", (debug) => {
-      set({ debug });
-    })
     .on("handData", (data) => {
       const oldTargets = get().controllers?.[data.userId] || [];
       const newTargets = oldTargets.reduce((prev, target) => {
@@ -55,39 +51,22 @@ const mutations = (set, get) => {
         }
         return prev;
       }, []);
-      data.joints && Object.entries(data.joints).forEach(([handedness, joints]) => {
-        let target = newTargets.find(
-          ({ handedness: targetHandedness }) => handedness === targetHandedness
-        );
-        const fakeInputSource =
-          fakeInputSourceFactory.createFakeInputSource(handedness);
-        if (!target) {
-          target = new RemoteXRController(data, handedness);
-          target.webXRController.connect(fakeInputSource);
-          newTargets.push(target);
-        }
-        const fakeFrame = {
-          session: { visibilityState: "visible" },
-          getPose: () => null,
-          getJointPose: (inputjoint) => {
-            const jointPose = joints?.[inputjoint?.jointName];
-            if (!jointPose) {
-              return null;
-            }
-            return {
-              transform: { matrix: jointPose.transformMatrix },
-              radius: jointPose.radius,
-            };
-          },
-        };
-        const fakeReferenceSpace = "local";
-        target.lastXRUpdate = Date.now();
-        target.webXRController.update(
-          fakeInputSource,
-          fakeFrame,
-          fakeReferenceSpace
-        );
-      });
+      // left & right
+      data.joints &&
+        Object.entries(data.joints).forEach(([handedness, joints]) => {
+          let target = newTargets.find(
+            ({ handedness: targetHandedness }) =>
+              handedness === targetHandedness
+          );
+          const fakeInputSource =
+            fakeInputSourceFactory.createFakeInputSource(handedness);
+          if (!target) {
+            target = new RemoteXRController(data, handedness);
+            target.webXRController.connect(fakeInputSource);
+            newTargets.push(target);
+          }
+          target.update(joints, fakeInputSource, data.fidelity);
+        });
       const symDiff = newTargets
         .filter((x) => !oldTargets.includes(x))
         .concat(oldTargets.filter((x) => !newTargets.includes(x)));

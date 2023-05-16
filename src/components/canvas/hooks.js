@@ -7,7 +7,7 @@ function useIsColliding(group) {
   const { collide } = useDebug();
   return React.useCallback(
     ({ pinchingController }) => {
-      // do initial position check (if futher, don't check for collisions)
+      // do initial position check (if further, don't check for collisions)
       const position = pinchingController.position;
       const groupPosition = group.current.getWorldPosition(new Vector3());
 

@@ -28,9 +28,7 @@ function RemoteXRControllers({ targets, pizzaPositions, index, userId }) {
   };
   if (handView === "Pizza") {
     groupProps.position = pizzaPositions[index];
-    // to not have the 2 users be opposite of each other when there are only 2
-    // put them 90° next to each other (as if there were 4)
-    const rotateSegments = users.length === 2 ? 4 : users.length;
+    const rotateSegments = users.length;
     // index of hands in users array (the position on the pizza)
     const rotationDeg = index * -(360 / rotateSegments);
     groupProps["rotation-y"] = MathUtils.degToRad(rotationDeg);

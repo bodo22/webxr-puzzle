@@ -1,7 +1,7 @@
 import React from "react";
 import { Canvas } from "@react-three/fiber";
 import { PerspectiveCamera, Preload, Sky, Stage } from "@react-three/drei";
-import { XR, Controllers, Hands, VRButton } from "@react-three/xr";
+import { XR, Controllers, VRButton } from "@react-three/xr";
 import { Selection } from "@react-three/postprocessing";
 
 // import CustomVRButton from "@/components/dom/VRButton";
@@ -39,7 +39,6 @@ export default function Scene({ children, ...props }) {
               {/* camera position is managed by moving the xr player, see index.jsx */}
               <PerspectiveCamera makeDefault />
               <Controllers />
-              <Hands />
               {children}
               <Preload all />
               <Debug />

@@ -7,9 +7,10 @@ import PizzaCircle from "@/components/canvas/PizzaCircle";
 import useSocket, { useUsers } from "@/stores/socket";
 import useInteracting from "@/stores/interacting";
 import { MathUtils, Vector3 } from "three";
+import LocalHands from "./components/canvas/local/LocalHands";
 
 const stretchFingers = 145;
-const bentFingers = 110;
+const bentFingers = 80;
 
 const anglesToMeasure = {
   thumb: {
@@ -63,7 +64,16 @@ const anglesToMeasure = {
   },
 };
 
+// first wins
 const gestures = {
+  // TODO: decide whether to use this pinch, or device pinch (selectstart etc.)
+  // pinch: {
+  //   thumb: "stretched",
+  //   index: "stretched",
+  //   middle: "bent",
+  //   ring: "bent",
+  //   pinky: "bent",
+  // },
   fist: {
     thumb: "bent",
     index: "bent",
@@ -127,34 +137,33 @@ function getFingerGestures(handModel) {
   return angles;
 }
 
+function updateGestures() {
+  const { gestures, hands, setGesture } = useInteracting.getState();
+  Object.entries(hands).forEach(([handedness, hand]) => {
+    let newGesture = undefined;
+    const handModel = hand?.children?.find(
+      (child) => child.constructor.name === "OculusHandModel"
+    );
+    if (handModel?.motionController?.bones?.length > 0) {
+      const fingerGestures = getFingerGestures(handModel);
+      newGesture = getGesture(fingerGestures);
+      if (newGesture !== gestures[handedness]) {
+        setGesture(handedness, newGesture);
+      }
+    }
+  });
+}
+
 const RecordHandData = () => {
   const controllers = useXR((state) => state.controllers);
   const xr = useThree((state) => state.gl.xr);
   const sendHandData = useSocket((state) => state.sendHandData);
-  const setHand = useInteracting((state) => state.setHand);
   // const recordedHandData = React.useRef([])
 
   React.useEffect(() => {
     const handler = ({ data }) => {
-      const { gestures, pinchedObjects, hands } = useInteracting.getState();
-      const newGestures = Object.entries(hands).reduce(
-        (curr, [handedness, hand]) => {
-          let newGesture = undefined;
-          const handModel = hand?.children?.find(
-            (child) => child.constructor.name === "OculusHandModel"
-          );
-          if (handModel?.motionController?.bones?.length > 0) {
-            const fingerGestures = getFingerGestures(handModel);
-            newGesture = getGesture(fingerGestures);
-          } else {
-            console.log(handModel);
-          }
-          curr[handedness] = newGesture;
-          return curr;
-        },
-        {}
-      );
-      console.log(newGestures);
+      updateGestures();
+      const { pinchedObjects, gestures } = useInteracting.getState();
       const handData = {
         joints: data,
         gestures,
@@ -171,25 +180,6 @@ const RecordHandData = () => {
       xr.removeEventListener("managedHandsJointData", handler);
     };
   }, [controllers, xr, sendHandData]);
-
-  React.useEffect(() => {
-    const cleanups = controllers.map((target, index) => {
-      const onConnected = () => {
-        setHand(target.inputSource.handedness, target.hand);
-      };
-      const onDisconnected = () => {
-        setHand(target.inputSource.handedness, undefined);
-      };
-      target.addEventListener("connected", onConnected);
-      target.addEventListener("disconnected", onDisconnected);
-
-      return () => {
-        target.removeEventListener("connected", onConnected);
-        target.removeEventListener("disconnected", onDisconnected);
-      };
-    });
-    return () => cleanups.forEach((cleanup) => cleanup());
-  }, [controllers, setHand]);
 };
 
 function MoveCamera({ pizzaPositions }) {
@@ -202,9 +192,7 @@ function MoveCamera({ pizzaPositions }) {
   let position = new Vector3();
   if (handView === "Pizza" && pizzaPositions[userIdIndex]) {
     position = pizzaPositions[userIdIndex];
-    // to not have the 2 users be opposite of each other when there are only 2
-    // put them 90° next to each other (as if there were 4)
-    const rotateSegments = users.length === 2 ? 4 : users.length;
+    const rotateSegments = users.length;
     // absolute index of userId of hands in users array
     const rotationDeg = userIdIndex * -(360 / rotateSegments);
     rotationY = MathUtils.degToRad(rotationDeg);
@@ -225,6 +213,7 @@ const IndexCanvas = () => {
       <RecordHandData />
       <MoveCamera pizzaPositions={pizzaPositions} />
       <RemoteHandsAndControllers pizzaPositions={pizzaPositions} />
+      <LocalHands />
       <PizzaCircle
         setPizzaPositions={setPizzaPositions}
         pizzaPositions={pizzaPositions}

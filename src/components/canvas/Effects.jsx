@@ -1,5 +1,6 @@
 import React, { useRef } from "react";
 import { extend, useThree, useFrame } from "@react-three/fiber";
+import { useXR } from "@react-three/xr";
 
 import useBufferSize from "./hooks/useBufferSize";
 import useSelected from "./hooks/useSelected";
@@ -10,6 +11,7 @@ extend({ CustomEffects });
 function Effects() {
   const effects = useRef();
   const { gl, camera, scene } = useThree();
+  const player = useXR(state => state.player);
   const { width, height } = useBufferSize(gl);
 
   const selected = useSelected();
@@ -44,6 +46,9 @@ function Effects() {
       // Render stereo cameras
       const { cameras } = gl.xr.getCamera();
       cameras.forEach((arrayCamera, i) => {
+        if (!arrayCamera.parent) {
+          player.add(arrayCamera)
+        }
         effects.current.outlineEffect.maskPass.clearPass.enabled = i === 0;
         effects.current.outlineEffect.outlinePass.enabled = i === 1;
 

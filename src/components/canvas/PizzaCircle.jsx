@@ -27,9 +27,13 @@ export default function PizzaCircle({ setPizzaPositions, pizzaPositions }) {
         return p;
       });
       // first & last are "starting" points, in center of circle
-      setPizzaPositions(newPositions.slice(1, -1));
+      const points = newPositions.slice(1, -1);
+      if (usersLength === 2) {
+        points.splice(1, 1);
+      }
+      setPizzaPositions(points);
     }
-  }, [setPizzaPositions, circleSegments, userIdIndex]);
+  }, [setPizzaPositions, circleSegments, userIdIndex, usersLength]);
 
   return (
     <>
@@ -51,7 +55,7 @@ export default function PizzaCircle({ setPizzaPositions, pizzaPositions }) {
             <group
               position={position}
               rotation-y={MathUtils.degToRad(
-                userIdIndex * -(360 / (users.length === 2 ? 4 : users.length))
+                userIdIndex * -(360 / users.length)
               )}
               key={`${circleSegments}-index-position-for-${index}`}
             >

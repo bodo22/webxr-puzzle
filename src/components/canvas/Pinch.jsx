@@ -132,10 +132,8 @@ const Pinch = React.forwardRef(({ children, ...props }, passedRef) => {
   });
 
   // for inline or remote hands, only for testing
-  useHandEvent("pinchstart", selectOrPinchStart);
-  
-  // for inline or remote hands, only for testing
-  useHandEvent("pinchend", selectOrPinchEnd);
+  // useHandEvent("pinchstart", selectOrPinchStart);  
+  // useHandEvent("pinchend", selectOrPinchEnd);
 
   useUpdateGroup(ref, pinchingControllerRef, previousTransformRef);
   useListenForRemotePinch(props.name, ref, selectOrPinchEnd);

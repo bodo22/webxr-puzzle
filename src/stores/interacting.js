@@ -46,27 +46,13 @@ const mutations = (set, get) => {
         },
       });
     },
-    startGesture(handedness, gesture) {
+    setGesture(handedness, gesture) {
       set({
         gestures: {
           ...get().gestures,
           [handedness]: gesture,
         },
       });
-    },
-    endGesture(handedness, gesture) {
-      if (get().gestures[handedness] === gesture) {
-        // set back to initialGesture, only if it hasn't been overriden in the meantime
-        // AKA it's still the same gesture
-        // assumption: on the same hand, a gesture can't be triggered twice without
-        // being ended between the triggers
-        set({
-          gestures: {
-            ...get().gestures,
-            [handedness]: initialGesture,
-          },
-        });
-      }
     },
   };
 };
