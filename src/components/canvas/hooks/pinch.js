@@ -11,7 +11,7 @@ export function usePinch({ name, isColliding }) {
   const ref = React.useRef({ userData: {} });
   const pinchingControllerRef = React.useRef();
   const previousTransformRef = React.useRef();
-  const { setPinchedObject } = useInteracting((state) => state);
+  const { setPinchedObject, setPinching } = useInteracting((state) => state);
   const isPinched = !!useIsObjectPinched(name);
   const helperColor = isPinched ? formatRgb(color) : "blue";
   const { boundBoxes } = useDebug();
@@ -20,6 +20,7 @@ export function usePinch({ name, isColliding }) {
 
   const selectOrPinchStart = React.useCallback(
     ({ handedness, pinchingController }) => {
+      setPinching(handedness, true);
       const colliding = isColliding({ pinchingController });
       if (colliding) {
         const transform = pinchingController.transform;
@@ -29,17 +30,18 @@ export function usePinch({ name, isColliding }) {
         setPinchedObject(handedness, ref.current.name);
       }
     },
-    [isColliding, setPinchedObject]
+    [isColliding, setPinchedObject, setPinching]
   );
 
   const selectOrPinchEnd = React.useCallback(
     ({ handedness }) => {
+      setPinching(handedness, false);
       ref.current.userData.pinchStart = undefined;
       pinchingControllerRef.current = undefined;
       previousTransformRef.current = undefined;
       setPinchedObject(handedness, undefined);
     },
-    [setPinchedObject]
+    [setPinchedObject, setPinching]
   );
 
   return {

@@ -12,6 +12,10 @@ const initialState = {
     left: undefined,
     right: undefined,
   },
+  pinching: {
+    left: false,
+    right: false,
+  },
   pinchedObjects: {
     left: undefined,
     right: undefined,
@@ -51,6 +55,14 @@ const mutations = (set, get) => {
         gestures: {
           ...get().gestures,
           [handedness]: gesture,
+        },
+      });
+    },
+    setPinching(handedness, pinching) {
+      set({
+        pinching: {
+          ...get().pinching,
+          [handedness]: pinching,
         },
       });
     },

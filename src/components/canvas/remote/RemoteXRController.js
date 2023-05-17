@@ -2,12 +2,13 @@ import * as THREE from "three";
 import fistOverride from "../../../../public/handData/gesture-fist-1.json";
 import pointOverride from "../../../../public/handData/gesture-point-1.json";
 import defaultOverride from "../../../../public/handData/gesture-default-1.json";
+import pinchOverride from "../../../../public/handData/gesture-pinch-1.json";
 
 const jointPosesOverrides = {
   fist: fistOverride[0].joints,
   point: pointOverride[0].joints,
   default: defaultOverride[0].joints,
-  // TODO: add pinch
+  pinch: pinchOverride[0].joints,
 };
 
 export default class XRController extends THREE.Group {

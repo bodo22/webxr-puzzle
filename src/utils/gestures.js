@@ -119,7 +119,7 @@ function getFingerGestures(handModel) {
 }
 
 export function updateGestures() {
-  const { gestures, hands, setGesture } = useInteracting.getState();
+  const { gestures, hands, setGesture, pinching } = useInteracting.getState();
   Object.entries(hands).forEach(([handedness, hand]) => {
     let newGesture = undefined;
     const handModel = hand?.children?.find(
@@ -127,7 +127,8 @@ export function updateGestures() {
     );
     if (handModel?.motionController?.bones?.length > 0) {
       const fingerGestures = getFingerGestures(handModel);
-      newGesture = getGesture(fingerGestures);
+      // opinionated: pinch always overrides other gestures
+      newGesture = pinching[handedness] ? "pinch" : getGesture(fingerGestures);
       if (newGesture !== gestures[handedness]) {
         setGesture(handedness, newGesture);
       }
