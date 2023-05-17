@@ -1,4 +1,14 @@
 import * as THREE from "three";
+import fistOverride from "../../../../public/handData/gesture-fist-1.json";
+import pointOverride from "../../../../public/handData/gesture-point-1.json";
+import defaultOverride from "../../../../public/handData/gesture-default-1.json";
+
+const jointPosesOverrides = {
+  fist: fistOverride[0].joints,
+  point: pointOverride[0].joints,
+  default: defaultOverride[0].joints,
+  // TODO: add pinch
+};
 
 export default class XRController extends THREE.Group {
   constructor(data, handedness) {
@@ -22,6 +32,9 @@ export default class XRController extends THREE.Group {
 
     // this.visible = false
     this.add(this.controller, this.grip, this.hand);
+
+    this.initialMatrix = new THREE.Matrix4();
+    this.initialMatrix.copy(this.hand.matrix);
 
     this._onConnected = this._onConnected.bind(this);
     this._onDisconnected = this._onDisconnected.bind(this);
@@ -65,11 +78,13 @@ export default class XRController extends THREE.Group {
     this.webXRController.update(fakeInputSource, fakeFrame, fakeReferenceSpace);
   }
 
-  update(joints, fakeInputSource, fidelity) {
+  update(joints, fakeInputSource, fidelity, gesture) {
+    this.blob.visible = false;
+    this.hand.visible = false;
+    const fidelityChange = this.currentFidelity?.level !== fidelity?.level;
+    this.currentFidelity = fidelity;
     switch (fidelity?.level) {
       case "none": {
-        this.hand.visible = false;
-        this.blob.visible = false;
         break;
       }
       case "blob": {
@@ -77,23 +92,35 @@ export default class XRController extends THREE.Group {
         if (matrixArray) {
           const b = this.blob;
           b.matrix.fromArray(matrixArray);
-          b.matrix.decompose(b.position, b.rotation, b.scale);
+          b.matrix.decompose(b.position, b.quaternion, b.scale);
         } else {
           console.warn("matrixArray not defined", { joints, fidelity });
         }
-        this.hand.visible = false;
         this.blob.visible = true;
         break;
       }
       case "gesture": {
-        console.log("TODO gesture!");
-        this.blob.visible = false;
+        if (jointPosesOverrides[gesture]) {
+          const overrideJoints = jointPosesOverrides[gesture][this.handedness];
+          this.updateVirtual(overrideJoints, fakeInputSource);
+          const h = this.hand;
+          h.matrix.fromArray(joints.wrist.transformMatrix);
+          h.matrix.decompose(h.position, h.quaternion, h.scale);
+          h.updateMatrixWorld(true);
+        } else {
+          console.warn("gesture unknown", gesture, this.hand);
+        }
         this.hand.visible = true;
         break;
       }
       case "virtual": {
         this.updateVirtual(joints, fakeInputSource);
-        this.blob.visible = false;
+        if (fidelityChange) {
+          const h = this.hand;
+          h.matrix.copy(this.initialMatrix);
+          h.matrix.decompose(h.position, h.quaternion, h.scale);
+          h.updateMatrixWorld(true);
+        }
         this.hand.visible = true;
         break;
       }

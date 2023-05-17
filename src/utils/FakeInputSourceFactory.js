@@ -1,4 +1,4 @@
-function handValues() {
+function values() {
   return [
     { jointName: "wrist" },
     { jointName: "thumb-metacarpal" },
@@ -28,12 +28,16 @@ function handValues() {
   ];
 }
 
+function get(jointName) {
+  return { jointName };
+}
+
 class FakeInputSourceFactory {
   createFakeInputSource(handedness) {
     return {
       handedness,
       // gripSpace: {},
-      hand: { size: 25, values: handValues },
+      hand: { size: 25, values, get },
       profiles: [
         "oculus-hand",
         "generic-hand",

@@ -34,7 +34,7 @@ const watchNodeModules = () => {
         ignored: [
           "**/.git/**",
           /node_modules\/(?!three|@react-three|three-stdlib).*/,
-          '**/test-results/**',
+          "**/test-results/**",
           "**/node_modules/.vite/**",
         ],
       };

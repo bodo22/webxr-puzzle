@@ -21,10 +21,10 @@ export default function Hand({ target, color, handedness, localHand, userId }) {
   const setColor = React.useCallback(
     (color) => {
       if (!color) {
-        blob.material.color.setRGB(r, g, b);
+        blob?.material.color.setRGB(r, g, b);
         handMeshModelRef?.current?.material.color.setRGB(r, g, b);
       } else {
-        blob.material.color.set(color);
+        blob?.material.color.set(color);
         handMeshModelRef?.current?.material.color.set(color);
       }
     },
@@ -103,7 +103,8 @@ export default function Hand({ target, color, handedness, localHand, userId }) {
       {hands && localHand && (
         <Axes model={handModelRef.current?.motionController} />
       )}
-      <primitive object={blob} />
+      {/* blob will only exist in remote hands for now */}
+      {blob && <primitive object={blob} />}
     </>
   );
 }

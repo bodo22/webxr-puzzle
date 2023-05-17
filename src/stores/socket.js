@@ -65,7 +65,7 @@ const mutations = (set, get) => {
             target.webXRController.connect(fakeInputSource);
             newTargets.push(target);
           }
-          target.update(joints, fakeInputSource, data.fidelity);
+          target.update(joints, fakeInputSource, data.fidelity, data.gestures[handedness]);
         });
       const symDiff = newTargets
         .filter((x) => !oldTargets.includes(x))
