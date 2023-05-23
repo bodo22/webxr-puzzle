@@ -3,7 +3,7 @@ import { useGLTF } from "@react-three/drei";
 
 import Pinch from "./Pinch";
 import ShowWorldPosition from "./debug/ShowWorldPosition";
-import { useIsColliding } from "./hooks";
+import useIsColliding from "./hooks/useIsColliding";
 
 export default function Crate(props) {
   const group = React.useRef();

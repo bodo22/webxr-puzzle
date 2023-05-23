@@ -3,12 +3,11 @@ import { Matrix3, Vector3, Box3 } from "three";
 import { OBB } from "three-stdlib";
 import { useDebug } from "@/stores/socket";
 
-function useIsColliding(group) {
+export default function useIsColliding(group) {
   const { collide } = useDebug();
   return React.useCallback(
-    ({ pinchingController }) => {
+    ({ position, pinchingController }) => {
       // do initial position check (if further, don't check for collisions)
-      const position = pinchingController.position;
       const groupPosition = group.current.getWorldPosition(new Vector3());
 
       const box = new Box3().setFromObject(group.current);
@@ -31,29 +30,3 @@ function useIsColliding(group) {
     [group, collide]
   );
 }
-
-function useCenterObject(group) {
-  const [offset, setOffset] = React.useState();
-
-  React.useLayoutEffect(() => {
-    if (group.current) {
-      function getCenterPoint(mesh) {
-        const box = new Box3().setFromObject(mesh);
-        const center = new Vector3();
-        box.getCenter(center);
-        // mesh.localToWorld(center);
-        return center;
-      }
-      const centerOfGroup = getCenterPoint(group.current).multiplyScalar(-1);
-      setOffset((oldOffset) => {
-        if (oldOffset) {
-          return oldOffset;
-        }
-        return centerOfGroup;
-      });
-    }
-  }, [group]);
-  return offset;
-}
-
-export { useIsColliding, useCenterObject };

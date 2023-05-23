@@ -3,7 +3,7 @@ import { Gltf } from "@react-three/drei";
 
 import Pinch from "./Pinch";
 import ShowWorldPosition from "./debug/ShowWorldPosition";
-import { useIsColliding } from "./hooks";
+import useIsColliding from "./hooks/useIsColliding";
 
 // https://github.com/pmndrs/drei#gltf
 export default function GenericGltf({ gltfPath, ...props }) {

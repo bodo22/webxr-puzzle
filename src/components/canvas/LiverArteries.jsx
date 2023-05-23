@@ -3,7 +3,8 @@ import { OBJLoader } from "three-stdlib";
 import { useLoader } from "@react-three/fiber";
 
 import Pinch from "./Pinch";
-import { useIsColliding, useCenterObject } from "./hooks";
+import useIsColliding from "./hooks/useIsColliding";
+import useCenterObject from "./hooks/useCenterObject";
 import ShowWorldPosition from "./debug/ShowWorldPosition";
 
 export default function LiverArteries(props) {
