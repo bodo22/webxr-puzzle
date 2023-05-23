@@ -16,7 +16,9 @@ const initialState = {
   users: [],
   handView: "Ego",
   pieces: [],
-  debug: {},
+  debug: {
+    pizzaRadius: 0.5,
+  },
 };
 
 const adminStateEvents = ["userId", "handView", "pieces", "debug"];
@@ -65,7 +67,12 @@ const mutations = (set, get) => {
             target.webXRController.connect(fakeInputSource);
             newTargets.push(target);
           }
-          target.update(joints, fakeInputSource, data.fidelity, data.gestures[handedness]);
+          target.update(
+            joints,
+            fakeInputSource,
+            data.fidelity,
+            data.gestures[handedness]
+          );
         });
       const symDiff = newTargets
         .filter((x) => !oldTargets.includes(x))

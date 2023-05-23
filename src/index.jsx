@@ -1,15 +1,19 @@
 import React from "react";
 import { useXR } from "@react-three/xr";
-// import Logo from "@/components/canvas/Logo";
 import { useThree } from "@react-three/fiber";
 import RemoteHandsAndControllers from "@/components/canvas/remote/RemoteHandsAndControllers";
 import PizzaCircle from "@/components/canvas/PizzaCircle";
-import useSocket, { useUsers } from "@/stores/socket";
+import useSocket, { useUsers, useDebug, useUser } from "@/stores/socket";
 import useInteracting from "@/stores/interacting";
-import { MathUtils, Vector3 } from "three";
+import { BoxHelper, MathUtils, Vector3 } from "three";
 import LocalHands from "./components/canvas/local/LocalHands";
 import { updateGestures } from "./utils/gestures";
-
+import { useHelper, Box } from "@react-three/drei";
+import {
+  useBoundingBoxProps,
+  useBox,
+} from "./components/canvas/hooks/useBoundInteraction";
+import { formatRgb } from "culori";
 // Dom components go here
 export default function index() {
   return (
@@ -67,11 +71,33 @@ function MoveCamera({ pizzaPositions }) {
     rotationY = MathUtils.degToRad(rotationDeg);
   }
 
+  const { isPresenting } = useXR();
+
   React.useEffect(() => {
     const object = player;
-    object.position.copy(new Vector3(position.x, position.y, position.z));
+    let pos = new Vector3();
+    if (isPresenting) {
+      pos = new Vector3(position.x, position.y, position.z);
+    }
+    object.position.copy(pos);
     object.rotation.y = rotationY;
-  }, [player, rotationY, position.x, position.y, position.z]);
+  }, [player, rotationY, position.x, position.y, position.z, isPresenting]);
+}
+
+function BoundingBox({pizzaPositions}) {
+  const boxProps = useBoundingBoxProps(pizzaPositions);
+  const ref = React.useRef();
+  const { boundBoxes } = useDebug();
+  const { color } = useUser();
+  const setBoxRef = useBox((state) => state.setBoxRef);
+
+  React.useEffect(() => {
+    setBoxRef(ref);
+  }, [setBoxRef]);
+
+  useHelper(boundBoxes && ref, BoxHelper, formatRgb(color));
+
+  return <Box {...boxProps} ref={ref} />;
 }
 
 const IndexCanvas = () => {
@@ -87,7 +113,7 @@ const IndexCanvas = () => {
         setPizzaPositions={setPizzaPositions}
         pizzaPositions={pizzaPositions}
       />
-      {/* <Logo scale={0.5} position-z={-5} /> */}
+      <BoundingBox pizzaPositions={pizzaPositions} />
     </>
   );
 };

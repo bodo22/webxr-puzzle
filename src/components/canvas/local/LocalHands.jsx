@@ -1,13 +1,12 @@
 import React from "react";
 import { useXR } from "@react-three/xr";
 
-import useSocket, { useUsers } from "@/stores/socket";
+import useSocket, { useUser } from "@/stores/socket";
 import Hand from "../Hand";
 
 export default function LocalHands() {
   const userId = useSocket((state) => state.userId);
-  const userIdIndex = useSocket((state) => state.userIdIndex);
-  const users = useUsers();
+  const { color } = useUser();
   const controllers = useXR((state) => state.controllers);
 
   React.useLayoutEffect(() => {
@@ -26,7 +25,7 @@ export default function LocalHands() {
         localHand={true}
         userId={userId}
         key={`${userId}-${target.index}-hand`}
-        color={users[userIdIndex]?.color}
+        color={color}
         target={target}
         handedness={target.inputSource.handedness}
       />

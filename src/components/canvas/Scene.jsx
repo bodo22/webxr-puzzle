@@ -3,6 +3,7 @@ import { Canvas } from "@react-three/fiber";
 import { PerspectiveCamera, Preload, Sky, Stage } from "@react-three/drei";
 import { XR, Controllers, VRButton } from "@react-three/xr";
 import { Selection } from "@react-three/postprocessing";
+import { useDebug } from "@/stores/socket";
 
 // import CustomVRButton from "@/components/dom/VRButton";
 import Debug from "./debug";
@@ -10,6 +11,7 @@ import Effects from "./Effects";
 
 export default function Scene({ children, ...props }) {
   // Everything defined in here will persist between route changes, only children are swapped
+  const { pizzaRadius } = useDebug();
   return (
     <>
       <VRButton />
@@ -36,8 +38,8 @@ export default function Scene({ children, ...props }) {
                 ],
               }}
             >
-              {/* camera position is managed by moving the xr player, see index.jsx */}
-              <PerspectiveCamera makeDefault />
+              {/* camera position in XR mode is managed by moving the xr player, this is just for inline mode, see index.jsx */}
+              <PerspectiveCamera makeDefault position={[0, 1, pizzaRadius]} />
               <Controllers />
               {children}
               <Preload all />

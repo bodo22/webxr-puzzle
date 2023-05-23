@@ -1,19 +1,16 @@
 import React from "react";
 import { DoubleSide, MathUtils, Vector3 } from "three";
-import { Text } from "@react-three/drei";
+import { OrbitControls, Text } from "@react-three/drei";
 import { formatRgb } from "culori";
-import { OrbitControls } from "@react-three/drei";
 
 import useSocket, { useUsers, useDebug } from "@/stores/socket";
-
-const radius = 0.5;
 
 export default function PizzaCircle({ setPizzaPositions, pizzaPositions }) {
   const userIdIndex = useSocket((state) => state.userIdIndex);
   const users = useUsers();
   const usersLength = users.length;
   const circleMeshRef = React.useRef();
-  const { pizzaGeo, pizzaNums } = useDebug();
+  const { pizzaGeo, pizzaNums, pizzaRadius } = useDebug();
 
   const circleSegments = usersLength < 3 ? 4 : usersLength;
   const thetaStart = MathUtils.degToRad(90);
@@ -33,14 +30,24 @@ export default function PizzaCircle({ setPizzaPositions, pizzaPositions }) {
       }
       setPizzaPositions(points);
     }
-  }, [setPizzaPositions, circleSegments, userIdIndex, usersLength]);
+  }, [
+    setPizzaPositions,
+    circleSegments,
+    userIdIndex,
+    usersLength,
+    pizzaRadius,
+  ]);
 
   return (
     <>
       {/* rotation-x = thetaState, because circleGeos are vertical to begin with */}
-      <mesh ref={circleMeshRef} position-z={-radius} rotation-x={thetaStart}>
+      <mesh
+        ref={circleMeshRef}
+        // position-z={-pizzaRadius}
+        rotation-x={thetaStart}
+      >
         {/* args[2] = thetaState, because circleGeos have their first segment at 3 O'Clock, but we want it at 6 */}
-        <circleGeometry args={[radius, circleSegments, thetaStart]} />
+        <circleGeometry args={[pizzaRadius, circleSegments, thetaStart]} />
         <meshStandardMaterial
           side={DoubleSide}
           wireframe
@@ -72,7 +79,7 @@ export default function PizzaCircle({ setPizzaPositions, pizzaPositions }) {
             </group>
           );
         })}
-      <OrbitControls target={[0, 0, -radius]} />
+      <OrbitControls />
     </>
   );
 }
