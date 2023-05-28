@@ -1,18 +1,18 @@
 import React from "react";
-import { MathUtils } from "three";
 import { Select } from "@react-three/postprocessing";
 
 import useSocket, { useUsers } from "@/stores/socket";
-// import RemoteControllers from "./RemoteControllers";
 import RemoteHands from "./RemoteHands";
 import GenericGltf from "@/components/canvas/GenericGltf";
-import Crate from "@/components/canvas/Crate";
-import LiverArteries from "@/components/canvas/LiverArteries";
 import { useIsObjectPinched } from "@/stores/interacting";
+import usePlayerTransform from "../hooks/usePlayerTransform";
+// import RemoteControllers from "./RemoteControllers";
+// import Crate from "@/components/canvas/Crate";
+// import LiverArteries from "@/components/canvas/LiverArteries";
 
 const pieceComponentMapping = {
-  "my-fun-test-LiverArteries": LiverArteries,
-  "my-fun-test-crate": Crate,
+  // "my-fun-test-LiverArteries": LiverArteries,
+  // "my-fun-test-crate": Crate,
 };
 
 function RemoteTarget({ target }) {
@@ -20,19 +20,7 @@ function RemoteTarget({ target }) {
 }
 
 function RemoteXRControllers({ targets, pizzaPositions, index, userId }) {
-  const handView = useSocket((state) => state.handView);
-  const users = useUsers();
-
-  const groupProps = {
-    "rotation-y": 0,
-  };
-  if (handView === "Pizza") {
-    groupProps.position = pizzaPositions[index];
-    const rotateSegments = users.length;
-    // index of hands in users array (the position on the pizza)
-    const rotationDeg = index * -(360 / rotateSegments);
-    groupProps["rotation-y"] = MathUtils.degToRad(rotationDeg);
-  }
+  const groupProps = usePlayerTransform({ index, pizzaPositions });
 
   return (
     <group {...groupProps}>
@@ -51,10 +39,8 @@ function SelectablePuzzlePiece(props) {
   const MappedComponent = pieceComponentMapping[props.name];
   let component;
 
-  if (typeof MappedComponent === "string") {
-    component = (
-      <GenericGltf key={props.name} gltfPath={MappedComponent} {...props} />
-    );
+  if (MappedComponent === undefined) {
+    component = <GenericGltf key={props.name} {...props} />;
   } else {
     component = <MappedComponent key={props.name} {...props} />;
   }

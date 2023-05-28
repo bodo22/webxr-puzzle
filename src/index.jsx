@@ -3,9 +3,9 @@ import { useXR } from "@react-three/xr";
 import { useThree } from "@react-three/fiber";
 import RemoteHandsAndControllers from "@/components/canvas/remote/RemoteHandsAndControllers";
 import PizzaCircle from "@/components/canvas/PizzaCircle";
-import useSocket, { useUsers, useDebug, useUser } from "@/stores/socket";
+import useSocket, { useDebug, useUser } from "@/stores/socket";
 import useInteracting from "@/stores/interacting";
-import { BoxHelper, MathUtils, Vector3 } from "three";
+import { BoxHelper, Vector3 } from "three";
 import LocalHands from "./components/canvas/local/LocalHands";
 import { updateGestures } from "./utils/gestures";
 import { useHelper, Box } from "@react-three/drei";
@@ -14,6 +14,8 @@ import {
   useBox,
 } from "./components/canvas/hooks/useBoundInteraction";
 import { formatRgb } from "culori";
+import usePlayerTransform from "./components/canvas/hooks/usePlayerTransform";
+
 // Dom components go here
 export default function index() {
   return (
@@ -56,35 +58,23 @@ const RecordHandData = () => {
 };
 
 function MoveCamera({ pizzaPositions }) {
-  const handView = useSocket((state) => state.handView);
-  const userIdIndex = useSocket((state) => state.userIdIndex);
-  const users = useUsers();
-
   const player = useXR((state) => state.player);
-  let rotationY = 0;
-  let position = new Vector3();
-  if (handView === "Pizza" && pizzaPositions[userIdIndex]) {
-    position = pizzaPositions[userIdIndex];
-    const rotateSegments = users.length;
-    // absolute index of userId of hands in users array
-    const rotationDeg = userIdIndex * -(360 / rotateSegments);
-    rotationY = MathUtils.degToRad(rotationDeg);
-  }
-
-  const { isPresenting } = useXR();
+  const isPresenting = useXR((state) => state.isPresenting);
+  const { position, "rotation-y": rotationY } = usePlayerTransform({
+    pizzaPositions,
+  });
 
   React.useEffect(() => {
-    const object = player;
     let pos = new Vector3();
     if (isPresenting) {
       pos = new Vector3(position.x, position.y, position.z);
     }
-    object.position.copy(pos);
-    object.rotation.y = rotationY;
+    player.position.copy(pos);
+    player.rotation.y = rotationY;
   }, [player, rotationY, position.x, position.y, position.z, isPresenting]);
 }
 
-function BoundingBox({pizzaPositions}) {
+function BoundingBox({ pizzaPositions }) {
   const boxProps = useBoundingBoxProps(pizzaPositions);
   const ref = React.useRef();
   const { boundBoxes } = useDebug();

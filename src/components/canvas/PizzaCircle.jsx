@@ -7,12 +7,13 @@ import useSocket, { useUsers, useDebug } from "@/stores/socket";
 
 export default function PizzaCircle({ setPizzaPositions, pizzaPositions }) {
   const userIdIndex = useSocket((state) => state.userIdIndex);
+  const { studyMode } = useSocket((state) => state.level);
   const users = useUsers();
   const usersLength = users.length;
   const circleMeshRef = React.useRef();
   const { pizzaGeo, pizzaNums, pizzaRadius } = useDebug();
 
-  const circleSegments = usersLength < 3 ? 4 : usersLength;
+  const circleSegments = studyMode || usersLength < 3 ? 4 : usersLength;
   const thetaStart = MathUtils.degToRad(90);
 
   React.useLayoutEffect(() => {
@@ -25,7 +26,7 @@ export default function PizzaCircle({ setPizzaPositions, pizzaPositions }) {
       });
       // first & last are "starting" points, in center of circle
       const points = newPositions.slice(1, -1);
-      if (usersLength === 2) {
+      if (studyMode || usersLength === 2) {
         points.splice(1, 1);
       }
       setPizzaPositions(points);
@@ -36,6 +37,7 @@ export default function PizzaCircle({ setPizzaPositions, pizzaPositions }) {
     userIdIndex,
     usersLength,
     pizzaRadius,
+    studyMode,
   ]);
 
   return (

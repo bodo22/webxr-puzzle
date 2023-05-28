@@ -1,11 +1,12 @@
 // only works for 2 player-mode for now
 import React from "react";
-import { Vector3, Box3, MathUtils } from "three";
-import useSocket, { useDebug, useUser, useUsers } from "@/stores/socket";
+import { Box3 } from "three";
+import { useDebug, useUser } from "@/stores/socket";
 import { formatRgb } from "culori";
 
 import { create } from "zustand";
 import { combine, subscribeWithSelector } from "zustand/middleware";
+import usePlayerTransform from "./usePlayerTransform";
 
 export function useIsInBoundary() {
   const boxRef = useBox((state) => state.boxRef);
@@ -21,26 +22,13 @@ export function useIsInBoundary() {
 }
 
 export function useBoundingBoxProps(pizzaPositions) {
-  const userIdIndex = useSocket((state) => state.userIdIndex);
-  const handView = useSocket((state) => state.handView);
   const { pizzaRadius } = useDebug();
   const { color } = useUser();
-  const users = useUsers();
-
-  let rotationY = 0;
-  let position = new Vector3();
-  if (handView === "Pizza" && pizzaPositions[userIdIndex]) {
-    position = pizzaPositions[userIdIndex];
-    const rotateSegments = users.length;
-    // absolute index of userId of hands in users array
-    const rotationDeg = userIdIndex * -(360 / rotateSegments);
-    rotationY = MathUtils.degToRad(rotationDeg);
-  }
+  const playerTransform = usePlayerTransform({ pizzaPositions });
 
   const boxProps = {
     args: [1, 1, pizzaRadius * 2],
-    position,
-    "rotation-y": rotationY,
+    ...playerTransform,
     visible: false,
     // "material-wireframe": true,
     "material-color": formatRgb(color),

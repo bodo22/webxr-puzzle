@@ -9,7 +9,7 @@ try {
 } catch (err) {}
 const socket = io(undefined, {
   query: `isSessionSupported=${supported}`,
-  // query: `isSessionSupported=false`, OculusBrowser
+  // query: `isSessionSupported=false`
   forceNew: true,
 });
 

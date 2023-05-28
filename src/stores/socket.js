@@ -19,9 +19,10 @@ const initialState = {
   debug: {
     pizzaRadius: 0.5,
   },
+  level: {},
 };
 
-const adminStateEvents = ["userId", "handView", "pieces", "debug"];
+const adminStateEvents = ["userId", "handView", "pieces", "debug", "level"];
 
 const mutations = (set, get) => {
   adminStateEvents.forEach((eventName) => {
