@@ -88,9 +88,9 @@ export function useHandEvent(type, callback) {
         callback({ pinchingController, ...event });
       }
 
-      hand && hand.addEventListener(type, eventHandler);
+      hand?.addEventListener(type, eventHandler);
       return () => {
-        hand && hand.removeEventListener(type, eventHandler);
+        hand?.hand.removeEventListener(type, eventHandler);
       };
     });
 

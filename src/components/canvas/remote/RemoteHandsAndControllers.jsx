@@ -20,7 +20,7 @@ function RemoteTarget({ target }) {
 }
 
 function RemoteXRControllers({ targets, pizzaPositions, index, userId }) {
-  const groupProps = usePlayerTransform({ index, pizzaPositions });
+  const groupProps = usePlayerTransform({ index, pizzaPositions, userId });
 
   return (
     <group {...groupProps}>

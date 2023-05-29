@@ -27,27 +27,27 @@ export function getHandTransform(hand) {
 }
 
 export function getHandRotationMatrix(hand) {
-  const indexTip = hand.bones.find(
+  const indexKnuckle = hand.bones.find(
     (bone) => bone.jointName === "index-finger-phalanx-proximal"
   );
-  const thumbTip = hand.bones.find(
+  const thumbKnuckle = hand.bones.find(
     (bone) => bone.jointName === "thumb-phalanx-proximal"
   );
-  const indexKnuckle = hand.bones.find(
+  const indexJoint = hand.bones.find(
     (bone) => bone.jointName === "index-finger-metacarpal"
   );
-  const pinkyKnuckle = hand.bones.find(
+  const pinkyJoint = hand.bones.find(
     (bone) => bone.jointName === "pinky-finger-metacarpal"
   );
 
-  const z = thumbTip
+  const z = thumbKnuckle
     .getWorldPosition(new Vector3())
-    .sub(indexTip.getWorldPosition(new Vector3()))
+    .sub(indexKnuckle.getWorldPosition(new Vector3()))
     .normalize();
 
-  const y = indexKnuckle
+  const y = indexJoint
     .getWorldPosition(new Vector3())
-    .sub(pinkyKnuckle.getWorldPosition(new Vector3()))
+    .sub(pinkyJoint.getWorldPosition(new Vector3()))
     .normalize();
 
   const x = new Vector3().crossVectors(z, y).negate();

@@ -8,7 +8,9 @@ try {
   supported = await navigator.xr.isSessionSupported("immersive-vr");
 } catch (err) {}
 const socket = io(undefined, {
-  query: `isSessionSupported=${supported}`,
+  query: `isSessionSupported=${supported}&env=${
+    navigator.userAgent.includes("OculusBrowser") ? "VR" : "AR"
+  }`,
   // query: `isSessionSupported=false`
   forceNew: true,
 });

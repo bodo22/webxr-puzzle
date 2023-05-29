@@ -1,22 +1,43 @@
 // only works for 2 player-mode for now
 import React from "react";
-import { Box3 } from "three";
-import { useDebug, useUser } from "@/stores/socket";
+import { Box3, DoubleSide } from "three";
+import useSocket, { useDebug, useUser } from "@/stores/socket";
 import { formatRgb } from "culori";
 
 import { create } from "zustand";
 import { combine, subscribeWithSelector } from "zustand/middleware";
 import usePlayerTransform from "./usePlayerTransform";
 
-export function useIsInBoundary() {
+export function useIsInBoundary(type = "z-0-plane") {
   const boxRef = useBox((state) => state.boxRef);
-  const isInBoundary = React.useCallback(
+  const userIdSelf = useSocket((state) => state.userId);
+
+  const isInBox = React.useCallback(
     (position) => {
       const box = new Box3().setFromObject(boxRef?.current);
       return box.containsPoint(position);
     },
     [boxRef]
   );
+
+  const isThisSideOfPlane = React.useCallback(
+    (position) => {
+      let inBoundary = true;
+      if (userIdSelf === "VR" && position.z > 0) {
+        inBoundary = false;
+      }
+      if (userIdSelf === "AR" && position.z < 0) {
+        inBoundary = false;
+      }
+      return inBoundary;
+    },
+    [userIdSelf]
+  );
+
+  const isInBoundary = {
+    "z-0-plane": isThisSideOfPlane,
+    box: isInBox,
+  }[type];
 
   return isInBoundary;
 }
@@ -27,10 +48,11 @@ export function useBoundingBoxProps(pizzaPositions) {
   const playerTransform = usePlayerTransform({ pizzaPositions });
 
   const boxProps = {
-    args: [1, 1, pizzaRadius * 2],
+    args: [10, 10, pizzaRadius * 2],
     ...playerTransform,
     visible: false,
     // "material-wireframe": true,
+    // "material-side": DoubleSide,
     "material-color": formatRgb(color),
   };
 

@@ -116,7 +116,7 @@ export default function Axes({ model }) {
         <meshBasicMaterial color="blue" />
       </mesh>
       <mesh ref={thumbJointRef}>
-        <sphereGeometry args={[0.01]} />
+        <sphereGeometry args={[0.02]} />
         <meshBasicMaterial color="brown" />
       </mesh>
       <mesh ref={thumbTipCollidingRef}>
@@ -128,7 +128,7 @@ export default function Axes({ model }) {
         <meshBasicMaterial color="blue" />
       </mesh>
       <mesh ref={indexJointRef}>
-        <sphereGeometry args={[0.01]} />
+        <sphereGeometry args={[0.02]} />
         <meshBasicMaterial color="brown" />
       </mesh>
       <mesh ref={indexTipCollidingRef}>
@@ -136,11 +136,11 @@ export default function Axes({ model }) {
         <meshBasicMaterial color="orange" />
       </mesh>
       <mesh ref={indexKnuckleRef}>
-        <sphereGeometry args={[0.01]} />
+        <sphereGeometry args={[0.02]} />
         <meshBasicMaterial color="green" />
       </mesh>
       <mesh ref={pinkyKnuckleRef}>
-        <sphereGeometry args={[0.01]} />
+        <sphereGeometry args={[0.02]} />
         <meshBasicMaterial color="green" />
       </mesh>
       <mesh ref={positionRef}>

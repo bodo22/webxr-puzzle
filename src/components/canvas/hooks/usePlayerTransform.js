@@ -1,22 +1,26 @@
 import { Vector3, MathUtils } from "three";
 import useSocket, { useUsers } from "@/stores/socket";
 
-export default function usePlayerTransform({ index, pizzaPositions }) {
+export default function usePlayerTransform({ index, pizzaPositions, userId }) {
   const handView = useSocket((state) => state.handView);
   const { studyMode } = useSocket((state) => state.level);
   const users = useUsers();
   const userIdIndex = useSocket((state) => state.userIdIndex);
+  const userIdSelf = useSocket((state) => state.userId);
   const i = index ?? userIdIndex;
+  const uId = userId ?? userIdSelf;
+
+  const questTransform = uId === "VR";
 
   let rotationY = 0;
   let position = new Vector3();
   if (studyMode === true && pizzaPositions.length > 1) {
-    if (navigator.userAgent.includes("OculusBrowser")) {
+    if (questTransform) {
       // on quest
       position = pizzaPositions[1];
       rotationY = MathUtils.degToRad(180);
     } else {
-      // on hololens
+      // on hololens or inline (test / dev)
       position = pizzaPositions[0];
     }
   } else {

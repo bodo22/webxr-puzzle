@@ -15,6 +15,13 @@ export class HandMotionController {
     return handModelUtils.getHandPosition(this.target);
   }
 
+  jointWorldPositionFor(jointName) {
+    const joint = this.target.bones.find(
+      (bone) => bone.jointName === jointName
+    );
+    return joint.getWorldPosition(new Vector3())
+  }
+
   intersectsOBB(obb) {
     const matrix = handModelUtils.getHandRotationMatrix(this.target);
 

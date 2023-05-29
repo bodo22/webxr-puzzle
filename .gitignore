@@ -26,3 +26,4 @@ dist-ssr
 .cache
 public/models
 public/handData
+public/sounds

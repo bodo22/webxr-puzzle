@@ -1,13 +1,20 @@
 import React from "react";
 import { Canvas } from "@react-three/fiber";
-import { PerspectiveCamera, Preload, Sky, Stage } from "@react-three/drei";
+import {
+  PerspectiveCamera,
+  Preload,
+  Plane,
+  Sky,
+  Stage,
+} from "@react-three/drei";
 import { XR, Controllers, VRButton } from "@react-three/xr";
 import { Selection } from "@react-three/postprocessing";
 import { useDebug } from "@/stores/socket";
 
 // import CustomVRButton from "@/components/dom/VRButton";
 import Debug from "./debug";
-import Effects from "./Effects";
+import { DoubleSide } from "three";
+// import Effects from "./Effects";
 
 export default function Scene({ children, ...props }) {
   // Everything defined in here will persist between route changes, only children are swapped
@@ -45,7 +52,15 @@ export default function Scene({ children, ...props }) {
               <Preload all />
               <Debug />
               <Sky sunPosition={[10, 10, -1000]} distance={10} />
-              <Effects />
+              <Plane args={[100, 100]}>
+                <meshBasicMaterial
+                  color="black"
+                  transparent
+                  opacity={0.3}
+                  side={DoubleSide}
+                />
+              </Plane>
+              {/* <Effects /> */}
             </XR>
           </Stage>
         </Selection>
