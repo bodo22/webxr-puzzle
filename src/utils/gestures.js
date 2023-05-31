@@ -66,13 +66,13 @@ const gestures = {
   //   ring: "bent",
   //   pinky: "bent",
   // },
-  fist: {
-    thumb: "bent",
-    index: "bent",
-    middle: "bent",
-    ring: "bent",
-    pinky: "bent",
-  },
+  // fist: {
+  //   thumb: "bent",
+  //   index: "bent",
+  //   middle: "bent",
+  //   ring: "bent",
+  //   pinky: "bent",
+  // },
   point: {
     // thumb: "bent",
     index: "stretched",

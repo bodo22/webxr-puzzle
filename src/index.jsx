@@ -1,6 +1,6 @@
 import React from "react";
 import { useXR } from "@react-three/xr";
-import { useThree } from "@react-three/fiber";
+import { createPortal, useThree } from "@react-three/fiber";
 import RemoteHandsAndControllers from "@/components/canvas/remote/RemoteHandsAndControllers";
 import PizzaCircle from "@/components/canvas/PizzaCircle";
 import useSocket, { useDebug, useUser } from "@/stores/socket";
@@ -8,7 +8,7 @@ import useInteracting from "@/stores/interacting";
 import { BoxHelper, Vector3 } from "three";
 import LocalHands from "./components/canvas/local/LocalHands";
 import { updateGestures } from "./utils/gestures";
-import { useHelper, Box } from "@react-three/drei";
+import { useHelper, Box, OrbitControls } from "@react-three/drei";
 import {
   useBoundingBoxProps,
   useBox,
@@ -17,6 +17,21 @@ import { formatRgb } from "culori";
 import usePlayerTransform from "./components/canvas/hooks/usePlayerTransform";
 
 // Dom components go here
+function keepJoint(joints, jointName) {
+  if (!joints) {
+    return joints;
+  }
+  return Object.entries(joints).reduce((acc, [handedness, joints]) => {
+    acc[handedness] = joints;
+    const joint = joints?.[jointName];
+    if (joint) {
+      acc[handedness] = {
+        [jointName]: joint,
+      };
+    }
+    return acc;
+  }, {});
+}
 export default function index() {
   return (
     <>
@@ -27,19 +42,34 @@ export default function index() {
   );
 }
 
-const RecordHandData = () => {
+function useRecordHandData() {
   const controllers = useXR((state) => state.controllers);
   const xr = useThree((state) => state.gl.xr);
   const sendHandData = useSocket((state) => state.sendHandData);
+  const fidelity = useSocket((state) => state.fidelity);
   // const recordedHandData = React.useRef([]);
 
   React.useEffect(() => {
-    const handler = ({ data }) => {
+    const handler = ({ data: joints }) => {
       updateGestures();
       const { pinchedObjects, gestures } = useInteracting.getState();
+      switch (fidelity?.level) {
+        case "blob": {
+          joints = keepJoint(joints, fidelity.blobJoint);
+          break;
+        }
+        case "gesture": {
+          joints = keepJoint(joints, "wrist");
+          break;
+        }
+        default: {
+          break;
+        }
+      }
       const handData = {
-        joints: data,
+        joints,
         gestures,
+        fidelity,
         pinchedObjects,
       };
       // recordedHandData.current.push(handData);
@@ -54,10 +84,10 @@ const RecordHandData = () => {
     return () => {
       xr.removeEventListener("managedHandsJointData", handler);
     };
-  }, [controllers, xr, sendHandData]);
-};
+  }, [controllers, xr, sendHandData, fidelity]);
+}
 
-function MoveCamera({ pizzaPositions }) {
+function useMoveCamera(pizzaPositions) {
   const player = useXR((state) => state.player);
   const isPresenting = useXR((state) => state.isPresenting);
   const { position, "rotation-y": rotationY } = usePlayerTransform({
@@ -69,6 +99,7 @@ function MoveCamera({ pizzaPositions }) {
     if (isPresenting) {
       pos = new Vector3(position.x, position.y, position.z);
     }
+    player.name = "myplayer";
     player.position.copy(pos);
     player.rotation.y = rotationY;
   }, [player, rotationY, position.x, position.y, position.z, isPresenting]);
@@ -90,22 +121,36 @@ function BoundingBox({ pizzaPositions }) {
   return <Box {...boxProps} ref={ref} />;
 }
 
-const IndexCanvas = () => {
+function ChildrenWrapper() {
   const [pizzaPositions, setPizzaPositions] = React.useState([]);
+  useRecordHandData();
+  useMoveCamera(pizzaPositions);
+  const scene = useThree((state) => state.scene);
 
   return (
     <>
-      <RecordHandData />
-      <MoveCamera pizzaPositions={pizzaPositions} />
-      <RemoteHandsAndControllers pizzaPositions={pizzaPositions} />
-      <LocalHands />
-      <PizzaCircle
-        setPizzaPositions={setPizzaPositions}
-        pizzaPositions={pizzaPositions}
-      />
-      <BoundingBox pizzaPositions={pizzaPositions} />
+      {createPortal(
+        <>
+          <RemoteHandsAndControllers pizzaPositions={pizzaPositions} />
+          <LocalHands />
+          <PizzaCircle
+            setPizzaPositions={setPizzaPositions}
+            pizzaPositions={pizzaPositions}
+          />
+          <BoundingBox pizzaPositions={pizzaPositions} />
+          <ambientLight intensity={0.2} />
+          <spotLight intensity={0.2} position={[-1, 1, 0]} />
+          <directionalLight intensity={0.4} position={[1, 1, 0]} />
+        </>,
+        scene
+      )}
+      <OrbitControls />
     </>
   );
+}
+
+const IndexCanvas = () => {
+  return <ChildrenWrapper />;
 };
 
 index.canvas = IndexCanvas;

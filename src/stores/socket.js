@@ -20,9 +20,10 @@ const initialState = {
     pizzaRadius: 0.5,
   },
   level: {},
+  fidelity: {},
 };
 
-const adminStateEvents = ["userId", "handView", "pieces", "debug", "level"];
+const adminStateEvents = ["userId", "handView", "pieces", "debug", "level", "fidelity"];
 
 const mutations = (set, get) => {
   adminStateEvents.forEach((eventName) => {
@@ -102,6 +103,15 @@ const mutations = (set, get) => {
   return {
     sendHandData: throttle(emitHandData, wait),
     sendPinchData: throttle(emitPinchData, wait),
+    updatePiece(name, key, value) {
+      const pieces = [...get().pieces].map((piece) => {
+        if (piece.name === name) {
+          piece[key] = value;
+        }
+        return piece;
+      });
+      set({ pieces });
+    },
   };
 };
 
@@ -124,8 +134,18 @@ export const useUser = (indexOrUserId) => {
   return users?.[useIndex] ?? {};
 };
 
+const params = new URL(document.location).searchParams;
+const overrideDebug = params.get("overrideDebug") === "all";
+
 export function useDebug() {
-  return useSocket((state) => state.debug);
+  const debug = useSocket((state) => state.debug);
+  if (overrideDebug) {
+    return Object.entries(debug).reduce((acc, [key, value]) => {
+      acc[key] = value === false ? true : value;
+      return acc;
+    }, {});
+  }
+  return debug;
 }
 
 export default useSocket;

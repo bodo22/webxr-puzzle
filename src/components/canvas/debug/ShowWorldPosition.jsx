@@ -24,7 +24,7 @@ export default function ShowWorldPosition({ target }) {
   return createPortal(
     <group>
       <mesh ref={ref}>
-        <sphereGeometry args={[0.05]} />
+        <sphereGeometry args={[0.03]} />
         <meshBasicMaterial color="blue" />
       </mesh>
     </group>,

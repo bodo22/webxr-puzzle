@@ -1,6 +1,6 @@
 import React from "react";
 import { DoubleSide, MathUtils, Vector3 } from "three";
-import { OrbitControls, Text } from "@react-three/drei";
+import { Text } from "@react-three/drei";
 import { formatRgb } from "culori";
 
 import useSocket, { useUsers, useDebug } from "@/stores/socket";
@@ -47,26 +47,31 @@ export default function PizzaCircle({ setPizzaPositions, pizzaPositions }) {
         ref={circleMeshRef}
         // position-z={-pizzaRadius}
         rotation-x={thetaStart}
+        name="pizzaCircle"
       >
         {/* args[2] = thetaState, because circleGeos have their first segment at 3 O'Clock, but we want it at 6 */}
         <circleGeometry args={[pizzaRadius, circleSegments, thetaStart]} />
         <meshStandardMaterial
           side={DoubleSide}
           wireframe
-          transparent
-          visible={pizzaGeo}
+          colorWrite={pizzaGeo}
+          depthWrite={pizzaGeo}
+          depthTest={pizzaGeo}
+          color="red"
         />
       </mesh>
       {pizzaNums &&
         pizzaPositions.map((position, index) => {
           const color = users[index]?.color;
+          const key = `${circleSegments}-index-position-for-${index}`;
           return (
             <group
               position={position}
               rotation-y={MathUtils.degToRad(
                 userIdIndex * -(360 / users.length)
               )}
-              key={`${circleSegments}-index-position-for-${index}`}
+              key={key}
+              name={key}
             >
               <Text
                 color={formatRgb(color)}
@@ -81,7 +86,6 @@ export default function PizzaCircle({ setPizzaPositions, pizzaPositions }) {
             </group>
           );
         })}
-      <OrbitControls />
     </>
   );
 }

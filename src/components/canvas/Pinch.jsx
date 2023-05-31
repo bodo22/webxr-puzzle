@@ -1,7 +1,6 @@
 import React from "react";
 import { useFrame } from "@react-three/fiber";
 import { useXREvent } from "@react-three/xr";
-import { PositionalAudio } from "@react-three/drei";
 import { mergeRefs } from "react-merge-refs";
 import { MathUtils, Matrix4, Quaternion, Vector3 } from "three";
 
@@ -18,16 +17,21 @@ function useUpdateGroup(
   ref,
   pinchingControllerRef,
   previousTransformRef,
-  positionGoal,
-  selectOrPinchEnd
+  selectOrPinchEnd,
+  props
 ) {
   const sendPinchData = useSocket((state) => state.sendPinchData);
   const userId = useSocket((state) => state.userId);
   const pinched = useIsObjectPinched(ref.current?.name);
   const goal = new Vector3(
-    positionGoal[0],
-    positionGoal[1] + 0.05,
-    positionGoal[2]
+    props.positionGoal[0],
+    props.positionGoal[1] + 0.05,
+    props.positionGoal[2]
+  );
+  const trash = new Vector3(
+    props.positionTrash[0],
+    props.positionTrash[1] + 0.05,
+    props.positionTrash[2]
   );
   const { positionThreshold, rotationThreshold } = useSocket(
     (state) => state.level
@@ -83,10 +87,20 @@ function useUpdateGroup(
 
     // done moving pinched object
 
-    const distance = ref.current.position.distanceTo(goal);
-    const positionReached = distance <= positionThreshold;
+    const dToGoal = ref.current.position.distanceTo(goal);
+    const positionReached = dToGoal <= positionThreshold;
+    const dToTrash = ref.current.position.distanceTo(trash);
+    const trashReached = dToTrash <= positionThreshold * 2;
+
     let event;
-    if (positionReached) {
+    if (trashReached) {
+      event = {
+        type: "trashReached",
+        distance: dToTrash,
+        handedness: pinched[0],
+      };
+      ref.current.dispatchEvent(event);
+    } else if (positionReached) {
       const degX = Math.abs(MathUtils.radToDeg(ref.current.rotation.x));
       const degY = Math.abs(MathUtils.radToDeg(ref.current.rotation.y));
       const degZ = Math.abs(MathUtils.radToDeg(ref.current.rotation.z));
@@ -97,7 +111,7 @@ function useUpdateGroup(
       if (rotationReached) {
         event = {
           type: "goalReached",
-          distance,
+          distance: dToGoal,
           handedness: pinched[0],
         };
         ref.current.dispatchEvent(event);
@@ -146,20 +160,18 @@ function useListenForRemotePinch(name, ref, selectOrPinchEnd) {
 }
 
 const Pinch = React.forwardRef(
-  ({ children, goalReached, ...props }, passedRef) => {
-    const pinchSoundRef = React.useRef();
-    const releaseSoundRef = React.useRef();
+  ({ children, ignore, ...props }, passedRef) => {
     const {
       selectOrPinchEnd,
       selectOrPinchStart,
       ref,
       pinchingControllerRef,
       previousTransformRef,
-    } = usePinch({ ...props, pinchSoundRef, releaseSoundRef });
+    } = usePinch({ ...props });
 
     // for XR hands
     useXREvent("selectstart", ({ nativeEvent, target }) => {
-      if (goalReached) {
+      if (ignore) {
         return;
       }
       const handModelController = target.hand.children.find(
@@ -183,7 +195,7 @@ const Pinch = React.forwardRef(
 
     // for XR hands
     useXREvent("selectend", ({ nativeEvent }) => {
-      if (goalReached) {
+      if (ignore) {
         return;
       }
       selectOrPinchEnd({
@@ -200,35 +212,27 @@ const Pinch = React.forwardRef(
       ref,
       pinchingControllerRef,
       previousTransformRef,
-      props.positionGoal,
-      selectOrPinchEnd
+      selectOrPinchEnd,
+      props
     );
     useListenForRemotePinch(props.name, ref, selectOrPinchEnd);
 
     React.useEffect(() => {
       const group = ref.current;
-      function handleGoalReached(e) {
+      function handleEvent(e) {
         selectOrPinchEnd({ handedness: e.handedness });
       }
-      group.addEventListener("goalReached", handleGoalReached);
+      group.addEventListener("goalReached", handleEvent);
+      group.addEventListener("trashReached", handleEvent);
       return () => {
-        group.removeEventListener("goalReached", handleGoalReached);
+        group.removeEventListener("goalReached", handleEvent);
+        group.removeEventListener("trashReached", handleEvent);
       };
     });
 
     return (
       <group ref={mergeRefs([passedRef, ref])} {...props}>
         {children}
-        <PositionalAudio
-          url="sounds/pinch.mp3"
-          ref={pinchSoundRef}
-          loop={false}
-        />
-        <PositionalAudio
-          url="sounds/release.mp3"
-          ref={releaseSoundRef}
-          loop={false}
-        />
       </group>
     );
   }

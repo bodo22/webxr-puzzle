@@ -1,6 +1,6 @@
 import React from "react";
-import { Group, Matrix4 } from "three";
-import { useFrame, useThree } from "@react-three/fiber";
+import { Group, Matrix4, Vector3 } from "three";
+import { useFrame, useThree, createPortal } from "@react-three/fiber";
 import { Stats, GizmoHelper, GizmoViewport, Grid } from "@react-three/drei";
 import { useXR } from "@react-three/xr";
 import { HTMLMesh } from "three-stdlib";
@@ -11,6 +11,7 @@ export default function Debug() {
   const session = useXR((state) => state.session);
   const [statsMesh, setStatsMesh] = React.useState();
   const refSpace = React.useRef();
+  const ref = React.useRef();
   const { stats, grid, gizmo, center } = useDebug();
 
   useFrame((_, __, frame) => {
@@ -57,6 +58,7 @@ export default function Debug() {
     statsMesh.material.depthTest = false;
     statsMesh.material.opacity = stats ? 1 : 0;
     statsMesh.material.tansparency = true;
+    statsMesh.material.color.set("red");
   }
 
   return (
@@ -84,12 +86,14 @@ export default function Debug() {
           fadeStrength={1}
         />
       )}
-      {center && (
-        <mesh>
-          <sphereGeometry args={[0.03, 64, 64]} />
-          <meshStandardMaterial color={"hotpink"} />
-        </mesh>
-      )}
+      {center &&
+        createPortal(
+          <mesh ref={ref} name="pinkCenterBall">
+            <sphereGeometry args={[0.03, 64, 64]} />
+            <meshStandardMaterial color={"hotpink"} />
+          </mesh>,
+          state.scene
+        )}
     </>
   );
 }

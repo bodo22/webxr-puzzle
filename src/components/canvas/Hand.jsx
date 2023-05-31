@@ -1,6 +1,6 @@
 import React from "react";
 import { OculusHandModel } from "three-stdlib";
-import { extend, createPortal } from "@react-three/fiber";
+import { extend, createPortal, useFrame } from "@react-three/fiber";
 
 import useSocket, { useDebug } from "@/stores/socket";
 import useInteracting from "@/stores/interacting";
@@ -20,13 +20,13 @@ export default function Hand({ target, color, handedness, localHand, userId }) {
 
   const setColor = React.useCallback(
     (color) => {
-      if (!color) {
-        blob?.material.color.setRGB(r, g, b);
-        handMeshModelRef?.current?.material.color.setRGB(r, g, b);
-      } else {
-        blob?.material.color.set(color);
-        handMeshModelRef?.current?.material.color.set(color);
-      }
+      // if (!color) {
+      //   blob?.material.color.setRGB(r, g, b);
+      //   handMeshModelRef?.current?.material.color.setRGB(r, g, b);
+      // } else {
+      //   blob?.material.color.set(color);
+      //   handMeshModelRef?.current?.material.color.set(color);
+      // }
     },
     [r, g, b, blob]
   );
@@ -37,6 +37,12 @@ export default function Hand({ target, color, handedness, localHand, userId }) {
       function childAdded(event) {
         const mesh = event.child.getObjectByProperty("type", "SkinnedMesh");
         handMeshModelRef.current = mesh;
+        if (localHand && userId === "AR") {
+          // to hide hands in AR
+          mesh.material.colorWrite = false;
+          mesh.material.depthWrite = false;
+          mesh.material.depthTest = false;
+        }
         setColor();
       }
       handModel.addEventListener("childadded", childAdded);
@@ -45,7 +51,7 @@ export default function Hand({ target, color, handedness, localHand, userId }) {
         handModel.removeEventListener("childadded", childAdded);
       };
     }
-  }, [setColor]);
+  }, [setColor, localHand, userId]);
 
   const updateColor = React.useCallback(
     (gesture) => {
@@ -103,8 +109,6 @@ export default function Hand({ target, color, handedness, localHand, userId }) {
       {hands && localHand && (
         <Axes model={handModelRef.current?.motionController} />
       )}
-      {/* blob will only exist in remote hands for now */}
-      {blob && <primitive object={blob} />}
     </>
   );
 }

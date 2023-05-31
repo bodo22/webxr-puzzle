@@ -27,3 +27,6 @@ dist-ssr
 public/models
 public/handData
 public/sounds
+
+src/assets/handData
+src/assets/sounds

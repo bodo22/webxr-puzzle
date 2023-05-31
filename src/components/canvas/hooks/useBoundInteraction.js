@@ -23,10 +23,10 @@ export function useIsInBoundary(type = "z-0-plane") {
   const isThisSideOfPlane = React.useCallback(
     (position) => {
       let inBoundary = true;
-      if (userIdSelf === "VR" && position.z > 0) {
+      if (userIdSelf === "VR" && position.z > 0.15) {
         inBoundary = false;
       }
-      if (userIdSelf === "AR" && position.z < 0) {
+      if (userIdSelf === "AR" && position.z < -0.15) {
         inBoundary = false;
       }
       return inBoundary;
