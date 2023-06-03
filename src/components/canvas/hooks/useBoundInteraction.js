@@ -11,6 +11,7 @@ import usePlayerTransform from "./usePlayerTransform";
 export function useIsInBoundary(type = "z-0-plane") {
   const boxRef = useBox((state) => state.boxRef);
   const userIdSelf = useSocket((state) => state.userId);
+  const { singlePlayer } = useDebug();
 
   const isInBox = React.useCallback(
     (position) => {
@@ -23,6 +24,9 @@ export function useIsInBoundary(type = "z-0-plane") {
   const isThisSideOfPlane = React.useCallback(
     (position) => {
       let inBoundary = true;
+      if (singlePlayer) {
+        return inBoundary;
+      }
       if (userIdSelf === "VR" && position.z > 0.15) {
         inBoundary = false;
       }
@@ -31,7 +35,7 @@ export function useIsInBoundary(type = "z-0-plane") {
       }
       return inBoundary;
     },
-    [userIdSelf]
+    [userIdSelf, singlePlayer]
   );
 
   const isInBoundary = {
