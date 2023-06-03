@@ -27,7 +27,7 @@ const initialState = {
 };
 
 const mutations = (set, get) => {
-  const { socket } = useSocket.getState();
+  const { socket, log } = useSocket.getState();
 
   socket.on("reset", () => {
     set({
@@ -51,6 +51,11 @@ const mutations = (set, get) => {
       });
     },
     setGesture(handedness, gesture) {
+      log({
+        type: "setGesture",
+        handedness,
+        name: gesture,
+      });
       set({
         gestures: {
           ...get().gestures,
@@ -90,7 +95,7 @@ export function useHandEvent(type, callback) {
 
       hand?.addEventListener(type, eventHandler);
       return () => {
-        hand?.hand.removeEventListener(type, eventHandler);
+        hand?.removeEventListener(type, eventHandler);
       };
     });
 
