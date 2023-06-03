@@ -1,8 +1,8 @@
 import useInteracting from "@/stores/interacting";
 import { MathUtils, Vector3 } from "three";
 
-const stretchFingers = 145;
-const bentFingers = 80;
+const stretchFingers = 135;
+const bentFingers = 100;
 
 const anglesToMeasure = {
   thumb: {
