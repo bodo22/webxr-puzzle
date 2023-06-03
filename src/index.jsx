@@ -15,6 +15,7 @@ import {
 } from "./components/canvas/hooks/useBoundInteraction";
 import { formatRgb } from "culori";
 import usePlayerTransform from "./components/canvas/hooks/usePlayerTransform";
+import { jointNames } from "@/utils/FakeInputSourceFactory";
 
 // Dom components go here
 function keepJoint(joints, jointName) {
@@ -48,18 +49,20 @@ function useRecordHandData() {
   const sendHandData = useSocket((state) => state.sendHandData);
   const fidelity = useSocket((state) => state.fidelity);
   // const recordedHandData = React.useRef([]);
-
   React.useEffect(() => {
     const handler = ({ data: joints }) => {
       updateGestures();
       const { pinchedObjects, gestures } = useInteracting.getState();
       switch (fidelity?.level) {
         case "blob": {
-          joints = keepJoint(joints, fidelity.blobJoint);
+          const blobJointIndex = jointNames.findIndex(
+            ({ jointName }) => jointName === fidelity.blobJoint
+          );
+          joints = keepJoint(joints, blobJointIndex);
           break;
         }
         case "gesture": {
-          joints = keepJoint(joints, "wrist");
+          joints = keepJoint(joints, 0);
           break;
         }
         default: {

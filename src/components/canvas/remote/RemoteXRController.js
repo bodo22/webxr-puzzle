@@ -4,12 +4,29 @@ import pointOverride from "@/assets/handData/gesture-point-1.json";
 import defaultOverride from "@/assets/handData/gesture-default-1.json";
 import pinchOverride from "@/assets/handData/gesture-pinch-1.json";
 import loadGltf from "@/utils/loadGltf.js";
+import { jointNames } from "@/utils/FakeInputSourceFactory";
+
+function makeRemoteJointsType(joints) {
+  return Object.entries(joints).reduce((acc, [handedness, joints]) => {
+    acc[handedness] = Object.values(joints).map(
+      ({ transformMatrix, radius }) => {
+        return {
+          transformMatrix: transformMatrix.map(
+            (v) => Math.round(v * 1000) / 1000
+          ),
+          radius: Math.round(radius * 1000) / 1000,
+        };
+      }
+    );
+    return acc;
+  }, {});
+}
 
 const jointPosesOverrides = {
-  fist: fistOverride[0].joints,
-  point: pointOverride[0].joints,
-  default: defaultOverride[0].joints,
-  pinch: pinchOverride[0].joints,
+  fist: makeRemoteJointsType(fistOverride[0].joints),
+  point: makeRemoteJointsType(pointOverride[0].joints),
+  default: makeRemoteJointsType(defaultOverride[0].joints),
+  pinch: makeRemoteJointsType(pinchOverride[0].joints),
 };
 
 let pointMesh;
@@ -23,11 +40,11 @@ loadGltf("models/arrow.glb", (gltf) => {
 export default class XRController extends THREE.Group {
   constructor(data, handedness) {
     super();
-
     this.userId = data.userId;
     this.data = data;
     this.handedness = handedness;
     this.webXRController = new THREE.WebXRController();
+    this.webXRController.remote = true;
     this.controller = this.webXRController.getTargetRaySpace();
     this.grip = this.webXRController.getGripSpace();
     this.hand = this.webXRController.getHandSpace();
@@ -84,8 +101,8 @@ export default class XRController extends THREE.Group {
     const fakeFrame = {
       session: { visibilityState: "visible" },
       getPose: () => null,
-      getJointPose: (inputjoint) => {
-        const jointPose = joints?.[inputjoint?.jointName];
+      getJointPose: (inputjointIndex) => {
+        const jointPose = joints?.[inputjointIndex];
         if (!jointPose) {
           return null;
         }
@@ -112,7 +129,10 @@ export default class XRController extends THREE.Group {
         break;
       }
       case "blob": {
-        const matrixArray = joints?.[fidelity.blobJoint]?.transformMatrix;
+        const blobJointIndex = jointNames.findIndex(
+          ({ jointName }) => jointName === fidelity.blobJoint
+        );
+        const matrixArray = joints?.[blobJointIndex]?.transformMatrix;
         if (matrixArray) {
           const b = this.blobGroup;
           b.matrix.fromArray(matrixArray);
@@ -128,7 +148,7 @@ export default class XRController extends THREE.Group {
           const overrideJoints = jointPosesOverrides[gesture][this.handedness];
           this.updateVirtual(overrideJoints, fakeInputSource);
           const h = this.hand;
-          h.matrix.fromArray(joints.wrist.transformMatrix);
+          h.matrix.fromArray(joints[0].transformMatrix); // 0 = wrist
           h.matrix.decompose(h.position, h.quaternion, h.scale);
           h.updateMatrixWorld(true);
         } else {
