@@ -2,7 +2,7 @@ import React from "react";
 import { Select } from "@react-three/postprocessing";
 import { Gltf, Stars, Sparkles } from "@react-three/drei";
 import useSound from "use-sound";
-import useSocket, { useUsers } from "@/stores/socket";
+import useSocket, { useUsers, useLog } from "@/stores/socket";
 import RemoteHands from "./RemoteHands";
 import GenericGltf from "@/components/canvas/GenericGltf";
 import { useIsObjectPinched } from "@/stores/interacting";
@@ -11,8 +11,9 @@ import usePlayerTransform from "../hooks/usePlayerTransform";
 // import Crate from "@/components/canvas/Crate";
 // import LiverArteries from "@/components/canvas/LiverArteries";
 
-import successSfx from "@/sounds/success.mp3";
-import failSfx from "@/sounds/fail.mp3";
+import successSfx from "@/assets/sounds/success.mp3";
+import { useXREvent } from "@react-three/xr";
+// import failSfx from "@/assets/sounds/fail.mp3";
 
 const pieceComponentMapping = {
   // "my-fun-test-LiverArteries": LiverArteries,
@@ -51,30 +52,40 @@ function SelectablePuzzlePiece(props) {
   return <Select enabled={isPinched}>{component}</Select>;
 }
 
-const positionTrash = [-0.125, -0.45, 0];
+const positionTrash = [0, -0.45, 0];
 
 export default function RemoteHandsAndControllers({ pizzaPositions }) {
   const controllers = useSocket((state) => state.controllers);
   const pieces = useSocket((state) => state.pieces);
   const users = useUsers();
   const [playSuccess] = useSound(successSfx);
-  const [playFail] = useSound(failSfx);
-
-  const plateRef = React.useRef();
+  const log = useLog();
+  // const plateRef = React.useRef();
   const trashRef = React.useRef();
 
   const levelSuccess =
     pieces.length && pieces.every(({ success }) => success === true);
-  const levelFail =
-    pieces.length && pieces.some(({ trashed, trash }) => trashed && !trash);
 
   React.useEffect(() => {
-    levelSuccess && playSuccess();
-  }, [levelSuccess, playSuccess]);
+    if (levelSuccess) {
+      log({ type: "levelSucces" });
+      playSuccess();
+    }
+  }, [levelSuccess, playSuccess, log]);
 
-  React.useEffect(() => {
-    levelFail && playFail();
-  }, [levelFail, playFail]);
+  useXREvent("selectstart", ({ nativeEvent, ...rest }) => {
+    console.log(nativeEvent, rest);
+    log({
+      type: "selectstart",
+      handedness: nativeEvent.data.handedness,
+    });
+  });
+  useXREvent("selectend", ({ nativeEvent }) => {
+    log({
+      type: "selectend",
+      handedness: nativeEvent.data.handedness,
+    });
+  });
 
   return (
     <>
@@ -91,16 +102,16 @@ export default function RemoteHandsAndControllers({ pizzaPositions }) {
               {...props}
               positionGoal={positionGoal}
               positionTrash={positionTrash}
-              ignorePinch={levelSuccess || levelFail}
+              ignorePinch={levelSuccess}
             />
           );
         })}
-      <Gltf
+      {/* <Gltf
         src="models/pieces/plate.glb"
         ref={plateRef}
         scale={0.0025}
         position={[0.125, -0.35, 0]}
-      />
+      /> */}
       <Gltf
         src="models/pieces/1-trash.glb"
         ref={trashRef}

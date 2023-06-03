@@ -1,13 +1,10 @@
 import React from "react";
-import { Gltf, QuadraticBezierLine } from "@react-three/drei";
+import { Circle, Cylinder, Gltf, QuadraticBezierLine } from "@react-three/drei";
 import { formatRgb } from "culori";
 import Pinch from "./Pinch";
 import ShowWorldPosition from "./debug/ShowWorldPosition";
 import useIsColliding from "./hooks/useIsColliding";
 import useSocket, { useDebug } from "@/stores/socket";
-import useSound from "use-sound";
-import lockSfx from "@/sounds/lock.mp3";
-import trashSfx from "@/sounds/trash.mp3";
 
 // https://github.com/pmndrs/drei#gltf
 export default function GenericGltf({
@@ -21,44 +18,16 @@ export default function GenericGltf({
   const pieceRef = React.useRef();
   const goalRef = React.useRef();
   const isColliding = useIsColliding(ref);
-  const { pieces } = useDebug();
-  const src = pieces ? gltfPathDebug : gltfPath;
-  const [playLock] = useSound(lockSfx);
-  const [playTrash] = useSound(trashSfx);
+  const { pieces: debugPieces } = useDebug();
+  const src = debugPieces ? gltfPathDebug : gltfPath;
   const userIdSelf = useSocket((state) => state.userId);
-  const updatePiece = useSocket((state) => state.updatePiece);
 
-  React.useEffect(() => {
-    const group = ref.current;
-    function handleGoalReached(e) {
-      updatePiece(props.name, "success", true);
-      playLock();
-    }
-    group.addEventListener("goalReached", handleGoalReached);
-    return () => {
-      group.removeEventListener("goalReached", handleGoalReached);
-    };
-  }, [playLock, props.name, updatePiece]);
-
-  React.useEffect(() => {
-    const group = ref.current;
-    function handleEvent(e) {
-      updatePiece(props.name, "trashed", true);
-      if (props.trash) {
-        updatePiece(props.name, "success", true);
-      }
-      playTrash();
-    }
-    group.addEventListener("trashReached", handleEvent);
-    return () => {
-      group.removeEventListener("trashReached", handleEvent);
-    };
-  }, [props.trash, props.name, playTrash, updatePiece]);
+  const goalReached = props.success && !props.trash;
 
   React.useEffect(() => {
     const goal = goalRef.current;
     const piece = pieceRef.current;
-    const color = props.success ? "green" : formatRgb(props.color);
+    const color = goalReached ? "green" : formatRgb(props.color);
     goal?.traverse((node) => {
       if (node.material) {
         node.material.color.set(color);
@@ -71,7 +40,7 @@ export default function GenericGltf({
         node.material.color.set(color);
       }
     });
-  }, [goalRef, pieceRef, props.success, props.color]);
+  }, [goalRef, pieceRef, goalReached, props.color]);
 
   const spectator = userIdSelf === "spectator";
   // goal is not trash and (goal is on this side (self or other sides give))
@@ -80,24 +49,36 @@ export default function GenericGltf({
     ((props.type === "self" && userIdSelf === props.env) ||
       (props.type === "give" && userIdSelf !== props.env));
 
+  let goalReachedProps = {};
+  if (goalReached) {
+    goalReachedProps.position = [
+      props.positionGoal[0],
+      props.positionGoal[1] + 0.025,
+      props.positionGoal[2],
+    ];
+    goalReachedProps.rotation = props.rotationGoal;
+  }
   return (
     <>
       <Pinch
         isColliding={isColliding}
         ref={ref}
         {...props}
-        ignore={props.success || props.trashed || ignorePinch}
+        {...goalReachedProps}
+        ignore={goalReached || ignorePinch}
       >
         <ShowWorldPosition target={ref} />
-        <Gltf src={src} ref={pieceRef} visible={!props.trashed} />
+        <ShowWorldPosition target={goalRef} />
+        <Gltf src={src} ref={pieceRef} /* visible={!props.trashed} */ />
         {/* https://github.com/pmndrs/drei#quadraticbezierline */}
       </Pinch>
       {(spectator || showGoalPlatform) && (
         <group position={props.positionGoal} scale={props.scale * 1.5}>
-          <Gltf src={gltfPathGoal} ref={goalRef} />
+          {/* <Gltf src={gltfPathGoal} ref={goalRef} /> */}
+          <Cylinder args={[1, 1, 0.1, 30]} ref={goalRef} />
         </group>
       )}
-      {pieces && (
+      {debugPieces && (
         <QuadraticBezierLine
           start={props.position}
           // end={[props.positionGoal[0], 0.1, props.positionGoal[2]]} // Ending point, can be an array or a vec3

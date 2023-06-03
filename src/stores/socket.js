@@ -23,7 +23,14 @@ const initialState = {
   fidelity: {},
 };
 
-const adminStateEvents = ["userId", "handView", "pieces", "debug", "level", "fidelity"];
+const adminStateEvents = [
+  "userId",
+  "handView",
+  "pieces",
+  "debug",
+  "level",
+  "fidelity",
+];
 
 const mutations = (set, get) => {
   adminStateEvents.forEach((eventName) => {
@@ -97,6 +104,28 @@ const mutations = (set, get) => {
     socket.emit("pinchData", { userId: get().userId, ...pinchData });
   }
 
+  setInterval(() => {
+    if (get().userId !== "spectator") {
+      get().pieces.forEach((piece) => {
+        const pinchData = {
+          name: piece.name,
+        };
+        if (typeof piece.pinchStart !== "undefined") {
+          pinchData.pinchStart = piece.pinchStart;
+        }
+        if (typeof piece.trashed !== "undefined") {
+          pinchData.trashed = piece.trashed;
+        }
+        if (typeof piece.success !== "undefined") {
+          pinchData.success = piece.success;
+        }
+        if (Object.keys(pinchData).length > 2) {
+          socket.emit("pieceStateData", pinchData);
+        }
+      });
+    }
+  }, 500);
+
   const fps = 30;
   const wait = 1000 / fps;
 
@@ -111,6 +140,9 @@ const mutations = (set, get) => {
         return piece;
       });
       set({ pieces });
+    },
+    log(log) {
+      socket.emit("log", { ...log, timestamp: Date.now() });
     },
   };
 };
@@ -146,6 +178,10 @@ export function useDebug() {
     }, {});
   }
   return debug;
+}
+
+export function useLog() {
+  return useSocket((state) => state.log);
 }
 
 export default useSocket;
