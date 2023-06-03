@@ -157,14 +157,17 @@ function useListenForRemotePinch(ref, selectOrPinchEnd, props) {
     };
   }, [socket, pinched, ref, selectOrPinchEnd, props.name]);
   React.useEffect(() => {
-    function handlePieceStateData(pinchData) {
-      const dataIsForThisObj = props.name === pinchData.name;
-      if (dataIsForThisObj && (props.pinchStart ?? 0) < pinchData.pinchStart) {
-        if (pinchData.trashed !== props.trashed) {
-          updatePiece(props.name, "trashed", pinchData.trashed);
+    function handlePieceStateData(pieceStateData) {
+      const dataIsForThisObj = props.name === pieceStateData.name;
+      if (
+        dataIsForThisObj &&
+        (props.pinchStart ?? 0) < pieceStateData.pinchStart
+      ) {
+        if (pieceStateData.trashed !== props.trashed) {
+          updatePiece(props.name, "trashed", pieceStateData.trashed);
         }
-        if (pinchData.success !== props.success) {
-          updatePiece(props.name, "success", pinchData.success);
+        if (pieceStateData.success !== props.success) {
+          updatePiece(props.name, "success", pieceStateData.success);
         }
       }
     }

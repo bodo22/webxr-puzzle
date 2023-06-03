@@ -107,20 +107,20 @@ const mutations = (set, get) => {
   setInterval(() => {
     if (get().userId !== "spectator") {
       get().pieces.forEach((piece) => {
-        const pinchData = {
+        const pieceStateData = {
           name: piece.name,
         };
         if (typeof piece.pinchStart !== "undefined") {
-          pinchData.pinchStart = piece.pinchStart;
+          pieceStateData.pinchStart = piece.pinchStart;
         }
         if (typeof piece.trashed !== "undefined") {
-          pinchData.trashed = piece.trashed;
+          pieceStateData.trashed = piece.trashed;
         }
         if (typeof piece.success !== "undefined") {
-          pinchData.success = piece.success;
+          pieceStateData.success = piece.success;
         }
-        if (Object.keys(pinchData).length > 2) {
-          socket.emit("pieceStateData", pinchData);
+        if (Object.keys(pieceStateData).length > 2) {
+          socket.emit("pieceStateData", pieceStateData);
         }
       });
     }
