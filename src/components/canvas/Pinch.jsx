@@ -43,6 +43,15 @@ function useUpdateGroup(
   const isInBoundary = useIsInBoundary();
 
   useFrame(() => {
+    if (props.goalReached && ref.current) {
+      ref.current.position.set(
+        props.positionGoal[0],
+        props.positionGoal[1] + 0.025,
+        props.positionGoal[2]
+      );
+      ref.current.rotation.set(...props.rotationGoal);
+      return;
+    }
     if (
       !pinched ||
       !pinchingControllerRef.current ||
