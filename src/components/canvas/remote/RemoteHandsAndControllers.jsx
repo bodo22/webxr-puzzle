@@ -68,7 +68,7 @@ export default function RemoteHandsAndControllers({ pizzaPositions }) {
 
   React.useEffect(() => {
     if (levelSuccess) {
-      log({ type: "levelSucces" });
+      log({ type: "levelSuccess" });
       playSuccess();
     }
   }, [levelSuccess, playSuccess, log]);
