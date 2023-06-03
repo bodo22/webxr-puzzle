@@ -37,6 +37,7 @@ export default function RemoteHands() {
             color={color}
             target={target}
             handedness={target.handedness}
+            // local
           />
         );
       });
