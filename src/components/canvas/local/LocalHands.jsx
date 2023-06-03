@@ -19,16 +19,19 @@ export default function LocalHands() {
     }
   }, [controllers]);
 
-  return controllers.map((target) => {
-    return (
-      <Hand
-        localHand={true}
-        userId={userId}
-        key={`${userId}-${target.index}-hand`}
-        color={color}
-        target={target}
-        handedness={target.inputSource.handedness}
-      />
-    );
-  });
+  return controllers.reduce((acc, target) => {
+    if (target.inputSource.gamepad) {
+      acc.push(
+        <Hand
+          local
+          userId={userId}
+          key={`${userId}-${target.index}-hand`}
+          color={color}
+          target={target}
+          handedness={target.inputSource.handedness}
+        />
+      );
+    }
+    return acc;
+  }, []);
 }
