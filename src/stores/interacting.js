@@ -2,7 +2,10 @@ import React from "react";
 import { create } from "zustand";
 import { combine, subscribeWithSelector } from "zustand/middleware";
 
-import { HandMotionController } from "@/utils/MotionController";
+import {
+  HandMotionController,
+  TriggerMotionController,
+} from "@/utils/MotionController";
 import useSocket from "@/stores/socket";
 
 const initialGesture = "default";
@@ -87,11 +90,15 @@ export function useHandEvent(type, callback) {
         const handMotionController = event.target.children.find(
           (child) => child.constructor.name === "OculusHandModel"
         ).motionController;
-        const pinchingController = new HandMotionController(
-          handMotionController
-        );
+        let pinchingController;
+        if (event.target?.parent?.currentFidelity?.level === "blob") {
+          pinchingController = new TriggerMotionController(event.target.parent.blobGroup);
+        } else {
+          pinchingController = new HandMotionController(handMotionController);
+        }
         callback({ pinchingController, ...event });
       }
+      // TODO trigger pinchstart & pinchstop with RemoteHandMotionController
 
       hand?.addEventListener(type, eventHandler);
       return () => {

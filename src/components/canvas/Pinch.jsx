@@ -133,6 +133,7 @@ function useUpdateGroup(
       pinchStart: props.pinchStart,
       matrix: ref.current.matrix.elements,
       name: ref.current.name,
+      timestamp: Date.now(),
     });
   });
 }
@@ -141,7 +142,7 @@ function useListenForRemotePinch(ref, selectOrPinchEnd, props) {
   const socket = useSocket((state) => state.socket);
   const pinched = useIsObjectPinched(props.name);
   const updatePiece = useSocket((state) => state.updatePiece);
-
+  const log = useLog()
   React.useEffect(() => {
     function handlePinchData(pinchData) {
       const obj = ref?.current;
@@ -158,6 +159,16 @@ function useListenForRemotePinch(ref, selectOrPinchEnd, props) {
         obj.matrix.elements = pinchData.matrix;
         obj.matrix.decompose(obj.position, obj.quaternion, obj.scale);
         obj.updateWorldMatrix(false, true);
+        if (pinchData.timestamp) {
+          const received = Date.now()
+          log({
+            type: "objectMatrixUpdate",
+            name: pinchData.name,
+            sent: pinchData.timestamp,
+            received,
+            difference: received - pinchData.timestamp,
+          })
+        }
       }
     }
     socket.on("pinchData", handlePinchData);

@@ -56,12 +56,15 @@ const positionTrash = [0, -0.45, 0];
 
 export default function RemoteHandsAndControllers({ pizzaPositions }) {
   const controllers = useSocket((state) => state.controllers);
+  // let pieces = useSocket((state) => state.pieces);
   const pieces = useSocket((state) => state.pieces);
   const users = useUsers();
   const [playSuccess] = useSound(successSfx);
   const log = useLog();
   // const plateRef = React.useRef();
   const trashRef = React.useRef();
+
+  // pieces = pieces.map((d) => ({...d, success: true}));
 
   const levelSuccess =
     pieces.length && pieces.every(({ success }) => success === true);
@@ -74,7 +77,6 @@ export default function RemoteHandsAndControllers({ pizzaPositions }) {
   }, [levelSuccess, playSuccess, log]);
 
   useXREvent("selectstart", ({ nativeEvent, ...rest }) => {
-    console.log(nativeEvent, rest);
     log({
       type: "selectstart",
       handedness: nativeEvent.data.handedness,

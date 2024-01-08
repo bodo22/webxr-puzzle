@@ -7,6 +7,10 @@ import { fakeInputSourceFactory } from "@/utils";
 
 import RemoteXRController from "@/components/canvas/remote/RemoteXRController";
 
+import createWindow from "live-moving-average";
+
+const movingAverageWindowSize = 10;
+
 const initialState = {
   socket,
   ready: false,
@@ -52,7 +56,14 @@ const mutations = (set, get) => {
       if (userIdIndex === -1) {
         throw new Error(`userIdIndex not found, maybe not set?`);
       }
-      set({ users: newUsers, userIdIndex });
+      const newUsersWithWithAverageWindow = newUsers.map(user => {
+        return {
+          window:  createWindow(movingAverageWindowSize, 0),
+          receivedHandData: 0,
+          ...user,
+        }
+      })
+      set({ users: newUsersWithWithAverageWindow, userId, userIdIndex });
     })
     .on("handData", (data) => {
       const oldTargets = get().controllers?.[data.userId] || [];
@@ -76,13 +87,27 @@ const mutations = (set, get) => {
             target.webXRController.connect(fakeInputSource);
             newTargets.push(target);
           }
-          target.update(
-            joints,
-            fakeInputSource,
-            data.fidelity,
-            data.gestures[handedness]
-          );
+          target.update(joints, fakeInputSource, data, handedness);
         });
+
+      const received = Date.now();
+      const user = get().users.find(u => u.userId === data.userId);
+      if (user)  {
+        user.receivedHandData++;
+        user.window.push(received - data.timestamp)
+        if (data.fidelity && user.receivedHandData % 10 === 0) {
+          useSocket.getState().log({
+            type: "remoteHandUpdate",
+            userId: data.userId,
+            fidelity: data.fidelity.level,
+            sent: data.timestamp,
+            received,
+            difference: user.window.get(),
+            movingAverageWindowSize,
+          });
+        }
+      }
+
       const symDiff = newTargets
         .filter((x) => !oldTargets.includes(x))
         .concat(oldTargets.filter((x) => !newTargets.includes(x)));
@@ -126,7 +151,7 @@ const mutations = (set, get) => {
     }
   }, 500);
 
-  const fps = 30;
+  const fps = 20;
   const wait = 1000 / fps;
 
   return {

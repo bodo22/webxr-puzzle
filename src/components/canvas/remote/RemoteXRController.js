@@ -5,6 +5,7 @@ import defaultOverride from "@/assets/handData/gesture-default-1.json";
 import pinchOverride from "@/assets/handData/gesture-pinch-1.json";
 import loadGltf from "@/utils/loadGltf.js";
 import { jointNames } from "@/utils/FakeInputSourceFactory";
+import useSocket from "@/stores/socket";
 
 function makeRemoteJointsType(joints) {
   return Object.entries(joints).reduce((acc, [handedness, joints]) => {
@@ -117,13 +118,26 @@ export default class XRController extends THREE.Group {
     this.webXRController.update(fakeInputSource, fakeFrame, fakeReferenceSpace);
   }
 
-  update(joints, fakeInputSource, fidelity, gesture) {
+  update(joints, fakeInputSource, data, handedness) {
+    const fidelity = data.fidelity;
+    const pose = data.gestures[handedness];
+    const predictedDisplayTime = data.predictedDisplayTime;
     Object.values(this.blobs).forEach((mesh) => {
       mesh.visible = false;
     });
     this.hand.visible = false;
     const fidelityChange = this.currentFidelity?.level !== fidelity?.level;
     this.currentFidelity = fidelity;
+    // const poseChange = this.currentPose && this.currentPose !== pose;
+    // if (predictedDisplayTime && poseChange && this.currentPose === "pinch") {
+    //   console.log('pinchend');
+    //   this.hand.dispatchEvent({
+    //     type: "pinchend",
+    //     handedness: this.handedness,
+    //     target: this.hand,
+    //   });
+    // }
+    this.currentPose = pose;
     switch (fidelity?.level) {
       case "none": {
         break;
@@ -137,22 +151,23 @@ export default class XRController extends THREE.Group {
           const b = this.blobGroup;
           b.matrix.fromArray(matrixArray);
           b.matrix.decompose(b.position, b.quaternion, b.scale);
-          this.blobs[gesture].visible = true;
+          this.blobs[pose].visible = true;
+          // this.blobs.point.visible = true;
         } else {
           console.warn("matrixArray not defined", { joints, fidelity });
         }
         break;
       }
       case "gesture": {
-        if (jointPosesOverrides[gesture]) {
-          const overrideJoints = jointPosesOverrides[gesture][this.handedness];
+        if (jointPosesOverrides[pose]) {
+          const overrideJoints = jointPosesOverrides[pose][this.handedness];
           this.updateVirtual(overrideJoints, fakeInputSource);
           const h = this.hand;
           h.matrix.fromArray(joints[0].transformMatrix); // 0 = wrist
           h.matrix.decompose(h.position, h.quaternion, h.scale);
           h.updateMatrixWorld(true);
         } else {
-          console.warn("gesture unknown", gesture, this.hand);
+          console.warn("gesture unknown", pose, this.hand);
         }
         this.hand.visible = true;
         break;
@@ -173,6 +188,14 @@ export default class XRController extends THREE.Group {
         break;
       }
     }
+    // if (predictedDisplayTime && poseChange && pose === "pinch") {
+    //   console.log('pinch');
+    //   this.hand.dispatchEvent({
+    //     type: "pinchstart",
+    //     handedness: this.handedness,
+    //     target: this.hand,
+    //   });
+    // }
   }
 
   dispose() {

@@ -67,6 +67,10 @@ export class TriggerMotionController {
     this.obb.applyMatrix4(this.transform);
   }
 
+  jointWorldPositionFor(jointName) {
+    return this.target.getWorldPosition(new Vector3())
+  }
+
   intersectsOBB(obb) {
     const targetOBB = new OBB(
       undefined,

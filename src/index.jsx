@@ -50,7 +50,7 @@ function useRecordHandData() {
   const fidelity = useSocket((state) => state.fidelity);
   // const recordedHandData = React.useRef([]);
   React.useEffect(() => {
-    const handler = ({ data: joints }) => {
+    const handler = ({ data: joints, frame }) => {
       updateGestures();
       const { pinchedObjects, gestures } = useInteracting.getState();
       switch (fidelity?.level) {
@@ -74,6 +74,8 @@ function useRecordHandData() {
         gestures,
         fidelity,
         pinchedObjects,
+        predictedDisplayTime: frame.predictedDisplayTime,
+        timestamp: Date.now(),
       };
       // recordedHandData.current.push(handData);
       // console.log(recordedHandData.current);
@@ -141,13 +143,17 @@ function ChildrenWrapper() {
             pizzaPositions={pizzaPositions}
           />
           <BoundingBox pizzaPositions={pizzaPositions} />
+          {/* <ambientLight intensity={.3} />
+          <spotLight intensity={2} position={[-1, 1, 0]} />
+          <directionalLight intensity={1} position={[1, 1, 0]} /> */}
           <ambientLight intensity={0.2} />
           <spotLight intensity={0.2} position={[-1, 1, 0]} />
           <directionalLight intensity={0.4} position={[1, 1, 0]} />
         </>,
         scene
       )}
-      <OrbitControls />
+      {/* <OrbitControls /> */}
+      <OrbitControls  target={[0,-.3,0]} />
     </>
   );
 }

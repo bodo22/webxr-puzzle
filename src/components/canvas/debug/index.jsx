@@ -5,6 +5,7 @@ import { Stats, GizmoHelper, GizmoViewport, Grid } from "@react-three/drei";
 import { useXR } from "@react-three/xr";
 import { HTMLMesh } from "three-stdlib";
 import { useDebug } from "@/stores/socket";
+import { StatsGl } from "./StatsGl";
 
 export default function Debug() {
   const state = useThree((state) => state);
@@ -63,7 +64,9 @@ export default function Debug() {
 
   return (
     <>
-      <Stats showPanel={stats ? 0 : -1} className="stats" />
+      {/* <Stats showPanel={stats ? 0 : -1} className="stats" /> */}
+      <StatsGl 
+      />
       {gizmo && (
         <GizmoHelper alignment="bottom-right" margin={[80, 80]}>
           <GizmoViewport

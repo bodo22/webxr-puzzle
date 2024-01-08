@@ -35,12 +35,18 @@ export default function GenericGltf({
     });
   }, [color]);
 
-  const spectator = userIdSelf === "spectator";
+  // props.scale = .1
+
+  const spectatorAndNotTrash = userIdSelf === "spectator" && !props.trash;
   // goal is not trash and (goal is on this side (self or other sides give))
   const showGoalPlatform =
     !props.trash &&
     ((props.type === "self" && userIdSelf === props.env) ||
       (props.type === "give" && userIdSelf !== props.env));
+
+  // if (props.trash) {
+  //   props.position = [0, -0.38, 0];
+  // }
 
   return (
     <>
@@ -56,13 +62,20 @@ export default function GenericGltf({
         <Gltf src={src} ref={pieceRef} /* visible={!props.trashed} */ />
         {/* https://github.com/pmndrs/drei#quadraticbezierline */}
       </Pinch>
-      {(spectator || showGoalPlatform) && (
+      {(spectatorAndNotTrash || showGoalPlatform) && (
         <group position={props.positionGoal} scale={props.scale * 1.5}>
           <Cylinder args={[1, 1, 0.1, 30]} ref={goalRef}>
             <meshStandardMaterial metalness={0} color={color} />
           </Cylinder>
         </group>
       )}
+      {/* {!props.trash && (
+      <group position={props.positionGoal} scale={props.scale * 1.4}>
+          <Cylinder args={[1, 1, 0.1, 30]} ref={goalRef}>
+            <meshStandardMaterial metalness={0} color={color} />
+          </Cylinder>
+        </group>
+      )} */}
       {debugPieces && (
         <QuadraticBezierLine
           start={props.position}

@@ -6,6 +6,7 @@ import react from "@vitejs/plugin-react";
 import eslint from "vite-plugin-eslint";
 import jsconfigPaths from "vite-jsconfig-paths";
 const hostname = "local-ip.co";
+// const hostname = "traefik.me";
 const port = 5173;
 
 const addLocalIpLog = () => {
@@ -17,6 +18,7 @@ const addLocalIpLog = () => {
         const ip = ipUtil.address().replaceAll(".", "-");
         server.resolvedUrls["network"].push(
           `https://${ip}.my.${hostname}:${port}/`
+          // `https://${ip}.${hostname}:${port}/`
         );
         printUrls();
       };
@@ -71,6 +73,8 @@ export default defineConfig(async () => {
   if (!cert || !key) {
     cert = await getFile("/cert/server.pem");
     key = await getFile("/cert/server.key");
+    // cert = await getFile("/cert.pem");
+    // key = await getFile("/privkey.pem");
     await cache.save([
       { key: "cert", value: cert },
       { key: "key", value: key },
