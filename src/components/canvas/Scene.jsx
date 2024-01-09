@@ -12,7 +12,7 @@ import { Selection } from "@react-three/postprocessing";
 import useSocket, { useDebug } from "@/stores/socket";
 import { DoubleSide, MathUtils, Vector3 } from "three";
 
-// import CustomVRButton from "@/components/dom/VRButton";
+import CustomVRButton from "@/components/dom/VRButton";
 import Debug from "./debug";
 // import Effects from "./Effects";
 import DivisionPlane from "./DivisionPlane";
@@ -31,7 +31,11 @@ export default function Scene({ children, ...props }) {
       <Canvas
         {...props}
         // dpr={userId === "spectator" ? 0.25 : 1}
-        /* shadows */ onCreated={({ gl, xr, ...rest }) => {}}
+        /* shadows */ onCreated={({ gl, xr, ...rest }) => {
+          if (window.location.pathname === "/") {
+            document.body.appendChild(CustomVRButton.createButton(gl));
+          }
+        }}
       >
         <Selection>
           {/* <Stage
@@ -64,7 +68,11 @@ export default function Scene({ children, ...props }) {
             }}
           >
             {/* camera position in XR mode is managed by moving the xr player, this is just for inline mode, see index.jsx */}
-            <PerspectiveCamera makeDefault  position={[0, .0, -pizzaRadius*1.7]} ref={cam} />
+            <PerspectiveCamera
+              makeDefault
+              position={[0, 0.0, -pizzaRadius * 1.7]}
+              ref={cam}
+            />
             {/* <OrthographicCamera makeDefault position={[0, .8, 0]} ref={cam}
               zoom={1}
               top={.5}
