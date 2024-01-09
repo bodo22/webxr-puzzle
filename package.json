@@ -29,7 +29,7 @@
     "react-merge-refs": "^2.0.1",
     "socket.io-client": "^4.6.1",
     "stats-gl": "^1.0.4",
-    "three": "file:../forks/three.js",
+    "three": "file:../three.js",
     "three-stdlib": "^2.21.8",
     "use-sound": "^4.0.1",
     "zustand": "^4.3.6"
