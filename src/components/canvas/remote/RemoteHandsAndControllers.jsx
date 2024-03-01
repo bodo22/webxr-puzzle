@@ -1,11 +1,11 @@
 import React from "react";
-import { Select } from "@react-three/postprocessing";
+// import { Select } from "@react-three/postprocessing";
 import { Gltf, Stars, Sparkles } from "@react-three/drei";
 import useSound from "use-sound";
 import useSocket, { useUsers, useLog } from "@/stores/socket";
 import RemoteHands from "./RemoteHands";
 import GenericGltf from "@/components/canvas/GenericGltf";
-import { useIsObjectPinched } from "@/stores/interacting";
+// import { useIsObjectPinched } from "@/stores/interacting";
 import usePlayerTransform from "../hooks/usePlayerTransform";
 // import RemoteControllers from "./RemoteControllers";
 // import Crate from "@/components/canvas/Crate";
@@ -38,9 +38,8 @@ function RemoteXRControllers({ targets, pizzaPositions, index, userId }) {
     </group>
   );
 }
-
 function SelectablePuzzlePiece(props) {
-  const isPinched = !!useIsObjectPinched(props.name);
+  // const isPinched = !!useIsObjectPinched(props.name);
   const MappedComponent = pieceComponentMapping[props.name];
   let component;
 
@@ -49,7 +48,13 @@ function SelectablePuzzlePiece(props) {
   } else {
     component = <MappedComponent key={props.name} {...props} />;
   }
-  return <Select enabled={isPinched}>{component}</Select>;
+  return (
+    <>
+      {/* <Select enabled={isPinched}> */}
+      {component}
+      {/* </Select> */}
+    </>
+  );
 }
 
 const positionTrash = [0, -0.45, 0];
