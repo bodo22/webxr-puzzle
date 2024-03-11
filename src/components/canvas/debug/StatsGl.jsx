@@ -8,7 +8,7 @@ import {
 import Stats from "stats-gl";
 import { useLog } from "@/stores/socket";
 
-const fps = [];
+// const fps = [];
 
 export function StatsGl({ className, parent, ...props }) {
   const gl = useThree((state) => state.gl);

@@ -1,7 +1,7 @@
 import React from "react";
-import { Group, Matrix4, Vector3 } from "three";
+import { Group, Matrix4/* , Vector3 */ } from "three";
 import { useFrame, useThree, createPortal } from "@react-three/fiber";
-import { Stats, GizmoHelper, GizmoViewport, Grid } from "@react-three/drei";
+import { /* Stats, */ GizmoHelper, GizmoViewport, Grid } from "@react-three/drei";
 import { useXR } from "@react-three/xr";
 import { HTMLMesh } from "three-stdlib";
 import { useDebug } from "@/stores/socket";

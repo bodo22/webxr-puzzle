@@ -2,11 +2,11 @@ import React from "react";
 import { useFrame } from "@react-three/fiber";
 import { useXREvent } from "@react-three/xr";
 import { mergeRefs } from "react-merge-refs";
-import { MathUtils, Matrix4, Quaternion, Vector3 } from "three";
+import { Matrix4, Quaternion, Vector3 } from "three";
 import useSound from "use-sound";
 
 import useSocket, { useLog } from "@/stores/socket";
-import { useHandEvent, useIsObjectPinched } from "@/stores/interacting";
+import { /* useHandEvent, */ useIsObjectPinched } from "@/stores/interacting";
 import {
   HandMotionController,
   TriggerMotionController,
@@ -36,7 +36,7 @@ function useUpdateGroup(
     props.positionTrash[1] + 0.05,
     props.positionTrash[2]
   );
-  const { positionThreshold, rotationThreshold } = useSocket(
+  const { positionThreshold/* , rotationThreshold  */} = useSocket(
     (state) => state.level
   );
 
@@ -175,7 +175,7 @@ function useListenForRemotePinch(ref, selectOrPinchEnd, props) {
     return () => {
       socket.off("pinchData", handlePinchData);
     };
-  }, [socket, pinched, ref, selectOrPinchEnd, props.name]);
+  }, [socket, pinched, ref, selectOrPinchEnd, props.name, log]);
   React.useEffect(() => {
     function handlePieceStateData(pieceStateData) {
       const dataIsForThisObj = props.name === pieceStateData.name;

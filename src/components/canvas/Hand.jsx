@@ -2,7 +2,7 @@ import React from "react";
 import { OculusHandModel } from "three-stdlib";
 import { extend, createPortal } from "@react-three/fiber";
 
-import useSocket, { useDebug } from "@/stores/socket";
+import /* useSocket, */ { useDebug } from "@/stores/socket";
 import useInteracting from "@/stores/interacting";
 
 import Axes from "@/components/canvas/debug/Axes";
@@ -13,10 +13,10 @@ export default function Hand({ target, color, handedness, local, userId }) {
   const handModelRef = React.useRef();
   const handMeshModelRef = React.useRef();
   const { hands } = useDebug();
-  const socket = useSocket((state) => state.socket);
-  const gesture = useInteracting((state) => state.gestures[handedness]);
+  // const socket = useSocket((state) => state.socket);
+  // const gesture = useInteracting((state) => state.gestures[handedness]);
   // const { r, g, b } = color;
-  const { hand, blob } = target;
+  const { hand/* , blob */ } = target;
 
   // const setColor = React.useCallback(
   //   (color) => {

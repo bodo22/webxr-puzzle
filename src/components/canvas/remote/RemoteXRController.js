@@ -5,7 +5,7 @@ import defaultOverride from "@/assets/handData/gesture-default-1.json";
 import pinchOverride from "@/assets/handData/gesture-pinch-1.json";
 import loadGltf from "@/utils/loadGltf.js";
 import { jointNames } from "@/utils/FakeInputSourceFactory";
-import useSocket from "@/stores/socket";
+// import useSocket from "@/stores/socket";
 
 function makeRemoteJointsType(joints) {
   return Object.entries(joints).reduce((acc, [handedness, joints]) => {
@@ -121,7 +121,7 @@ export default class XRController extends THREE.Group {
   update(joints, fakeInputSource, data, handedness) {
     const fidelity = data.fidelity;
     const pose = data.gestures[handedness];
-    const predictedDisplayTime = data.predictedDisplayTime;
+    // const predictedDisplayTime = data.predictedDisplayTime;
     Object.values(this.blobs).forEach((mesh) => {
       mesh.visible = false;
     });
