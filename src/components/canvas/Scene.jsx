@@ -1,40 +1,100 @@
 import React from "react";
 import { Canvas } from "@react-three/fiber";
 import {
-  OrthographicCamera,
+  // OrthographicCamera,
   PerspectiveCamera,
   Preload,
-  Sky,
-  Stage,
+  // Sky,
+  // Stage,
 } from "@react-three/drei";
 import { XR, Controllers, VRButton } from "@react-three/xr";
 import { Selection } from "@react-three/postprocessing";
-import useSocket, { useDebug } from "@/stores/socket";
-import { DoubleSide, MathUtils, Vector3 } from "three";
+import { /* useSocket, */ useDebug } from "@/stores/socket";
+// import { DoubleSide, MathUtils, Vector3 } from "three";
 
-import CustomVRButton from "@/components/dom/VRButton";
+// import CustomVRButton from "@/components/dom/VRButton";
 import Debug from "./debug";
 // import Effects from "./Effects";
-import DivisionPlane from "./DivisionPlane";
+// import DivisionPlane from "./DivisionPlane";
+
+const buttonStyle = {
+  padding: "50px",
+  border: "1px solid #fff",
+  borderRadius: "4px",
+  background: "rgba(0,0,0,0.1)",
+  color: "#fff",
+  font: "normal 40px sans-serif",
+  textAlign: "center",
+  opacity: "0.5",
+  outline: "none",
+  zIndex: "999",
+};
 export default function Scene({ children, ...props }) {
   // Everything defined in here will persist between route changes, only children are swapped
   const { pizzaRadius } = useDebug();
-  const userId = useSocket((state) => state.userId);
+  // const userId = useSocket((state) => state.userId);
   const cam = React.useRef();
   React.useEffect(() => {
     // cam?.current?.lookAt(0, 0, -pizzaRadius);
   }, [pizzaRadius]);
 
+  const params = new URL(document.location).searchParams;
+  const env = params.get("env");
+  const inlineCamZ = pizzaRadius * 1.7;
   return (
     <>
-      <VRButton />
+      {env && (
+        <VRButton
+          style={{
+            ...buttonStyle,
+            position: "absolute",
+            bottom: 20,
+            left: "50%",
+            transform: "translateX(-50%)",
+          }}
+          sessionInit={{
+            requiredFeatures: [
+              // "local-floor",
+              // "bounded-floor",
+              // "hand-tracking",
+              // "layers",
+              // "dom-overlay",
+            ],
+            optionalFeatures: [
+              "local-floor",
+              "bounded-floor",
+              "hand-tracking",
+              // "layers",
+              // "dom-overlay",
+            ],
+          }}
+        />
+      )}
+      <div style={{ position: "absolute", bottom: 0, width: "100vw" }}>
+        <div
+          style={{
+            position: "relative",
+            display: "flex",
+            justifyContent: "space-between",
+            margin: 20,
+          }}
+        >
+          <a style={{ ...buttonStyle }} href="?env=VR1">
+            VR1
+          </a>
+          <a style={{ ...buttonStyle }} href="?env=VR2">
+            VR2
+          </a>
+        </div>
+      </div>
+
       <Canvas
         {...props}
         // dpr={userId === "spectator" ? 0.25 : 1}
         /* shadows */ onCreated={({ gl, xr, ...rest }) => {
-          if (window.location.pathname === "/") {
-            document.body.appendChild(CustomVRButton.createButton(gl));
-          }
+          // if (window.location.pathname === "/") {
+          //   // document.body.appendChild(CustomVRButton.createButton(gl));
+          // }
         }}
       >
         <Selection>
@@ -70,7 +130,7 @@ export default function Scene({ children, ...props }) {
             {/* camera position in XR mode is managed by moving the xr player, this is just for inline mode, see index.jsx */}
             <PerspectiveCamera
               makeDefault
-              position={[0, 0.0, -pizzaRadius * 1.7]}
+              position={[0, 1, inlineCamZ]}
               ref={cam}
             />
             {/* <OrthographicCamera makeDefault position={[0, .8, 0]} ref={cam}

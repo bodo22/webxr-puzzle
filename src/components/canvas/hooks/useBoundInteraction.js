@@ -1,6 +1,6 @@
 // only works for 2 player-mode for now
 import React from "react";
-import { Box3, DoubleSide } from "three";
+import { Box3/* , DoubleSide */ } from "three";
 import useSocket, { useDebug, useUser } from "@/stores/socket";
 import { formatRgb } from "culori";
 
@@ -27,10 +27,10 @@ export function useIsInBoundary(type = "z-0-plane") {
       if (singlePlayer) {
         return inBoundary;
       }
-      if (userIdSelf === "VR" && position.z > 0.15) {
+      if (["VR", "VR1"].includes(userIdSelf) && position.z > 0.15) {
         inBoundary = false;
       }
-      if (userIdSelf === "AR" && position.z < -0.15) {
+      if (["AR", "VR2"].includes(userIdSelf) && position.z < -0.15) {
         inBoundary = false;
       }
       return inBoundary;

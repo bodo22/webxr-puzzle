@@ -16,9 +16,12 @@ const addLocalIpLog = () => {
       const { printUrls } = server;
       server.printUrls = () => {
         const ip = ipUtil.address().replaceAll(".", "-");
+        const validHttpsCertDomain = `https://${ip}.my.${hostname}:${port}/`
         server.resolvedUrls["network"].push(
-          `https://${ip}.my.${hostname}:${port}/`
+          validHttpsCertDomain,
           // `https://${ip}.${hostname}:${port}/`
+          `adb shell am start -a android.intent.action.VIEW -d ${validHttpsCertDomain}`,
+          `adb shell am start -a android.intent.action.VIEW -d https://localhost:5173`
         );
         printUrls();
       };
@@ -30,7 +33,7 @@ const watchNodeModules = () => {
   return {
     name: "watch-node-modules",
     configureServer(server) {
-      console.log(server.watcher.options);
+      // console.log(server.watcher.options);
       server.watcher.options = {
         ...server.watcher.options,
         ignored: [
@@ -40,7 +43,7 @@ const watchNodeModules = () => {
           "**/node_modules/.vite/**",
         ],
       };
-      console.log(server.watcher.options);
+      // console.log(server.watcher.options);
     },
   };
 };

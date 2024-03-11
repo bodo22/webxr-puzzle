@@ -39,10 +39,11 @@ export default function GenericGltf({
 
   const spectatorAndNotTrash = userIdSelf === "spectator" && !props.trash;
   // goal is not trash and (goal is on this side (self or other sides give))
+  const self = userIdSelf === props.env || (props.env === "VR" && userIdSelf === "VR1") || (props.env === "AR" && userIdSelf === "VR2")
   const showGoalPlatform =
     !props.trash &&
-    ((props.type === "self" && userIdSelf === props.env) ||
-      (props.type === "give" && userIdSelf !== props.env));
+    ((props.type === "self" && self) ||
+      (props.type === "give" && !self));
 
   // if (props.trash) {
   //   props.position = [0, -0.38, 0];

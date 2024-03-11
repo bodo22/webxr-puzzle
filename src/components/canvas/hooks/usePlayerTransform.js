@@ -10,17 +10,15 @@ export default function usePlayerTransform({ index, pizzaPositions, userId }) {
   const i = index ?? userIdIndex;
   const uId = userId ?? userIdSelf;
 
-  const questTransform = uId === "VR";
+  const player1Transform = ["VR", "VR1"].includes(uId);
 
   let rotationY = 0;
   let position = new Vector3();
   if (studyMode === true && pizzaPositions.length > 1) {
-    if (questTransform) {
-      // on quest
+    if (player1Transform) {
       position = pizzaPositions[1];
       rotationY = MathUtils.degToRad(180);
     } else {
-      // on hololens or inline (test / dev)
       position = pizzaPositions[0];
     }
   } else {

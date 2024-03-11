@@ -17,6 +17,8 @@ export default function DivisionPlane() {
   const bounds = {
     AR: -0.15,
     VR: 0.15,
+    VR2: -0.15,
+    VR1: 0.15,
   };
 
   useFrame(({ clock }) => {
