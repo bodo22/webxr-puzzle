@@ -129,28 +129,6 @@ const mutations = (set, get) => {
     socket.emit("pinchData", { userId: get().userId, ...pinchData });
   }
 
-  setInterval(() => {
-    if (get().userId !== "spectator") {
-      get().pieces.forEach((piece) => {
-        const pieceStateData = {
-          name: piece.name,
-        };
-        if (typeof piece.pinchStart !== "undefined") {
-          pieceStateData.pinchStart = piece.pinchStart;
-        }
-        if (typeof piece.trashed !== "undefined") {
-          pieceStateData.trashed = piece.trashed;
-        }
-        if (typeof piece.success !== "undefined") {
-          pieceStateData.success = piece.success;
-        }
-        if (Object.keys(pieceStateData).length > 2) {
-          socket.emit("pieceStateData", pieceStateData);
-        }
-      });
-    }
-  }, 500);
-
   const fps = 20;
   const wait = 1000 / fps;
 
@@ -165,6 +143,22 @@ const mutations = (set, get) => {
         return piece;
       });
       set({ pieces });
+      const newPiece = get().pieces.find((p) => p.name === name)
+      const pieceStateData = {
+        name: newPiece.name,
+      };
+      if (typeof newPiece.pinchStart !== "undefined") {
+        pieceStateData.pinchStart = newPiece.pinchStart;
+      }
+      if (typeof newPiece.trashed !== "undefined") {
+        pieceStateData.trashed = newPiece.trashed;
+      }
+      if (typeof newPiece.success !== "undefined") {
+        pieceStateData.success = newPiece.success;
+      }
+      if (Object.keys(pieceStateData).length > 2) {
+        socket.emit("pieceStateData", pieceStateData);
+      }
     },
     log(log) {
       socket.emit("log", { ...log, timestamp: Date.now() });
