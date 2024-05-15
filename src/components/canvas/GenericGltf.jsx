@@ -39,11 +39,13 @@ export default function GenericGltf({
 
   const spectatorAndNotTrash = userIdSelf === "spectator" && !props.trash;
   // goal is not trash and (goal is on this side (self or other sides give))
-  const self = userIdSelf === props.env || (props.env === "VR" && userIdSelf === "VR1") || (props.env === "AR" && userIdSelf === "VR2")
+  const self =
+    userIdSelf === props.env ||
+    (props.env === "VR" && userIdSelf === "VR1") ||
+    (props.env === "AR" && userIdSelf === "VR2");
   const showGoalPlatform =
     !props.trash &&
-    ((props.type === "self" && self) ||
-      (props.type === "give" && !self));
+    ((props.type === "self" && self) || (props.type === "give" && !self));
 
   // if (props.trash) {
   //   props.position = [0, -0.38, 0];
@@ -58,16 +60,24 @@ export default function GenericGltf({
         goalReached={goalReached}
         ignore={goalReached || ignorePinch}
       >
-        <ShowWorldPosition target={ref} />
+        <ShowWorldPosition
+          target={ref}
+          text={props.pinchStart ?? props.pinchStart}
+        />
         <ShowWorldPosition target={goalRef} />
         <Gltf src={src} ref={pieceRef} /* visible={!props.trashed} */ />
         {/* https://github.com/pmndrs/drei#quadraticbezierline */}
       </Pinch>
       {(spectatorAndNotTrash || showGoalPlatform) && (
-        <group position={props.positionGoal} scale={props.scale * 1.5}>
-          <Cylinder args={[1, 1, 0.1, 30]} ref={goalRef}>
-            <meshStandardMaterial metalness={0} color={color} />
-          </Cylinder>
+        <group
+          position={props.positionGoal}
+          scale={props.scaleGoal ?? props.scale}
+        >
+          <group scale={1.5}>
+            <Cylinder args={[1, 1, 0.1, 30]} ref={goalRef}>
+              <meshStandardMaterial metalness={0} color={color} />
+            </Cylinder>
+          </group>
         </group>
       )}
       {/* {!props.trash && (
