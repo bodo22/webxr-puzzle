@@ -15,12 +15,14 @@ function RemoteViewer({
   userId,
   index,
   defaultTableHeight,
+  levelSuccess,
 }) {
   const playerTransform = usePlayerTransform({ index, userId });
   const userIdSelf = useSocket((state) => state.userId);
   const local = userIdSelf === userId;
   const { type: userType } = useUser();
-  const pinched = useInteracting((state) => state.pinchedObjects.right);
+  const { glb } = useSocket((state) => state.level);
+  const pinched = useInteracting((state) => state.pinchedObjects.right) === glb && glb;
   const logPhase1 = local && userType === "giver"; // reach & grasp
   const logPhase4 = local && userType === "receiver" && pinched; // end of handover
   const log = useLog();
@@ -37,7 +39,6 @@ function RemoteViewer({
     ref.current.geometry.computeBoundingBox();
     boxRef.current = new Box3();
   }, []);
-  const { glb } = useSocket((state) => state.level);
 
   const resetLogsSent = React.useCallback(() => {
     setPhaseOneLogSent(false);
@@ -72,20 +73,24 @@ function RemoteViewer({
     };
   }, [defaultTableHeight, local, resetLogsSent, setTableY, userId]);
 
-  const pinchObject = scene.getObjectByName(glb);
-  useFrame((_, __, frame) => {
+  useFrame(() => {
     if (boxRef.current) {
       boxRef.current
-        .copy(ref.current.geometry.boundingBox)
-        .applyMatrix4(ref.current.matrixWorld);
+      .copy(ref.current.geometry.boundingBox)
+      .applyMatrix4(ref.current.matrixWorld);
     }
-
+    
     if (local && motionController?.bones?.[11]) {
       const wristBone = new Vector3();
       motionController.bones[11].getWorldPosition(wristBone);
       if (tableY > wristBone.y - 0.03) {
         setTableY(wristBone.y - 0.03);
       }
+    }
+    const pinchObject = scene.getObjectByName(glb);
+    // if levelSuccess is true or pinchObject doesnt exist, return
+    if (levelSuccess || !pinchObject) {
+      return;
     }
     // if the box has not been set by the hand height yet, do not check
     // if the hand is inside the box
@@ -104,11 +109,12 @@ function RemoteViewer({
         setPhaseOneLogSent(true);
       }
 
-      if (logPhase4 && containsPoint && !phaseFourLogSent) {
+      if (logPhase4 && containsPoint && !phaseFourLogSent && !levelSuccess) {
         log({ type: "endOfHandover" });
         setPhaseFourLogSent(true);
         const event = {
           type: "goalReached",
+          handedness: "right",
         };
         pinchObject.dispatchEvent(event);
       }

@@ -54,14 +54,16 @@ export default function useListenForRemotePinch(ref, selectOrPinchEnd, props) {
           }
         }
         obj.updateWorldMatrix(false, true);
-        collideObjectParent.matrix = new Matrix4();
-        collideObjectParent.matrix.elements = obj.matrix.elements;
-        collideObjectParent.matrix.decompose(
-          collideObjectParent.position,
-          collideObjectParent.quaternion,
-          collideObjectParent.scale
-        );
-        collideObjectParent.updateWorldMatrix(false, true);
+        if (collideObjectParent) {
+          collideObjectParent.matrix = new Matrix4();
+          collideObjectParent.matrix.elements = obj.matrix.elements;
+          collideObjectParent.matrix.decompose(
+            collideObjectParent.position,
+            collideObjectParent.quaternion,
+            collideObjectParent.scale
+          );
+          collideObjectParent.updateWorldMatrix(false, true);
+        }
         if (pinchData.timestamp) {
           const received = getServerDateNow();
           log({

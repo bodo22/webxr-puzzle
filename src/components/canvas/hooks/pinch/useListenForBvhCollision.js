@@ -9,6 +9,7 @@ export default function useListenForBvhCollision({
   handedness,
   lockObjectToHand,
   releaseObjectFromHand,
+  ignore,
 }) {
   const scene = useThree((state) => state.scene);
   const isPinchingObject = useInteracting(
@@ -32,7 +33,9 @@ export default function useListenForBvhCollision({
     `hand-collision-body-${handedness}`
   );
   useFrame((_, __, frame) => {
-    if (handCollisionBodies?.children.length !== 10) {
+    if (ignore || handCollisionBodies?.children.length !== 10) {
+      prevPinchCollision.current = false;
+      prevGrabCollision.current = false;
       return;
     }
     // const collisionBodies = {
@@ -64,6 +67,8 @@ export default function useListenForBvhCollision({
       (body) => body?.userData?.colliding !== undefined
     );
     if (!allAreBoolean) {
+      prevPinchCollision.current = false;
+      prevGrabCollision.current = false;
       return;
     }
     const angles = getFingerGestures({ motionController });

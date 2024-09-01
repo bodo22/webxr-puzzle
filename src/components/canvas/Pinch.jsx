@@ -10,9 +10,14 @@ import lockSfx from "@/assets/sounds/lock.mp3";
 import trashSfx from "@/assets/sounds/trash.mp3";
 import useListenForRemotePinch from "./hooks/pinch/useListenForRemotePinch";
 import useUpdateGroup from "./hooks/pinch/useUpdateGroup";
+import useInteracting from "@/stores/interacting";
 
 const Pinch = React.forwardRef(({ children, ignore, ...props }, ref) => {
-  const { selectOrPinchEnd, selectOrPinchStart } = usePinch({ ...props, ignore, ref });
+  const { selectOrPinchEnd, selectOrPinchStart } = usePinch({
+    ...props,
+    ignore,
+    ref,
+  });
   const [playLock] = useSound(lockSfx);
   const [playTrash] = useSound(trashSfx);
   const updatePiece = useSocket((state) => state.updatePiece);
@@ -43,11 +48,13 @@ const Pinch = React.forwardRef(({ children, ignore, ...props }, ref) => {
 
   useUpdateGroup(ref, props);
   useListenForRemotePinch(ref, selectOrPinchEnd, props);
+  const setBvhColliding = useInteracting((state) => state.setBvhColliding);
 
   React.useEffect(() => {
     const group = ref.current;
     function handleGoalReached({ target, ...e }) {
       log(e);
+      setBvhColliding(e.handedness, false);
       updatePiece(props.name, "success", true);
       selectOrPinchEnd({ handedness: e.handedness });
       playLock();
@@ -64,6 +71,7 @@ const Pinch = React.forwardRef(({ children, ignore, ...props }, ref) => {
     selectOrPinchEnd,
     ref,
     log,
+    setBvhColliding,
   ]);
 
   const lastSuccess =

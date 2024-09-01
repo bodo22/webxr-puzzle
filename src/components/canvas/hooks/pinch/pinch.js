@@ -141,11 +141,13 @@ export function usePinch({ name, mesh, ref, ignore }) {
     handedness: "right",
     lockObjectToHand,
     releaseObjectFromHand,
+    ignore,
   });
   // useListenForBvhCollision({
   //   handedness: "left",
   //   lockObjectToHand,
   //   releaseObjectFromHand,
+  //   ignore,
   // });
 
   return { selectOrPinchEnd, selectOrPinchStart };
