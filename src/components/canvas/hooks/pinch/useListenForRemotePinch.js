@@ -1,6 +1,6 @@
 import React from "react";
-import { Matrix4 } from "three";
-import useSocket, { useLog } from "@/stores/socket";
+import { MathUtils, Matrix4, Quaternion, Vector3 } from "three";
+import useSocket, { useLog, useUser } from "@/stores/socket";
 import useInteracting, { useIsObjectPinched } from "@/stores/interacting";
 import { useThree } from "@react-three/fiber";
 import { getServerDateNow } from "../useGetServerDate";
@@ -14,6 +14,11 @@ export default function useListenForRemotePinch(ref, selectOrPinchEnd, props) {
   const setLastRemotePinchOverride = useInteracting(
     (state) => state.setLastRemotePinchOverride
   );
+  const objectOrientation = useSocket((state) => state.objectOrientation);
+  const { type: userType } = useUser();
+  const slerpAfterBothHandover =
+    userType === "giver" && objectOrientation.level === "towardBoth";
+
   const { glb } = useSocket((state) => state.level);
   const meshName = `${glb}-meshWithBvh`;
   const collideObjectParent = scene.getObjectByName(meshName)?.parent;
@@ -32,10 +37,25 @@ export default function useListenForRemotePinch(ref, selectOrPinchEnd, props) {
         }
         obj.matrix = new Matrix4();
         obj.matrix.elements = pinchData.matrix;
+        const currQuat = new Quaternion().copy(obj.quaternion);
         obj.matrix.decompose(obj.position, obj.quaternion, obj.scale);
+        if (slerpAfterBothHandover) {
+          const tmp = new Matrix4();
+          tmp.elements = pinchData.matrix;
+          const goalQuat = new Quaternion();
+          tmp.decompose(new Vector3(), goalQuat, new Vector3());
+          const angle = MathUtils.radToDeg(goalQuat.angleTo(currQuat));
+          if (angle > 10) {
+            // console.log("angle too big", angle);
+            // obj.quaternion.slerpQuaternions(currQuat, goalQuat, 0.05);
+            currQuat.rotateTowards(goalQuat, MathUtils.degToRad(5));
+            obj.quaternion.copy(currQuat);
+            obj.updateMatrix();
+          }
+        }
         obj.updateWorldMatrix(false, true);
         collideObjectParent.matrix = new Matrix4();
-        collideObjectParent.matrix.elements = pinchData.matrix;
+        collideObjectParent.matrix.elements = obj.matrix.elements;
         collideObjectParent.matrix.decompose(
           collideObjectParent.position,
           collideObjectParent.quaternion,
