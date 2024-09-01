@@ -100,9 +100,9 @@ function ChildrenWrapper() {
   const playerTransform = usePlayerTransform();
   useMoveCamera();
   const scene = useThree((state) => state.scene);
-  const renderer = useThree((state) => state.gl);
-  const ref = React.useRef();
-
+  
+  // const renderer = useThree((state) => state.gl);
+  // const ref = React.useRef();
   // React.useEffect(() => {
   //   const xrPlanes = ref.current;
   //   function planesChanged() {
