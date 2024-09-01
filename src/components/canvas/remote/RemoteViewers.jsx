@@ -9,7 +9,7 @@ import useInteracting from "@/stores/interacting";
 import socket from "@/stores/socketConnection";
 
 function RemoteViewer({
-  color,
+  color: propColor,
   tableY,
   setTableY,
   userId,
@@ -22,7 +22,8 @@ function RemoteViewer({
   const local = userIdSelf === userId;
   const { type: userType } = useUser();
   const { glb } = useSocket((state) => state.level);
-  const pinched = useInteracting((state) => state.pinchedObjects.right) === glb && glb;
+  const pinched =
+    useInteracting((state) => state.pinchedObjects.right) === glb && glb;
   const logPhase1 = local && userType === "giver"; // reach & grasp
   const logPhase4 = local && userType === "receiver" && pinched; // end of handover
   const log = useLog();
@@ -76,10 +77,10 @@ function RemoteViewer({
   useFrame(() => {
     if (boxRef.current) {
       boxRef.current
-      .copy(ref.current.geometry.boundingBox)
-      .applyMatrix4(ref.current.matrixWorld);
+        .copy(ref.current.geometry.boundingBox)
+        .applyMatrix4(ref.current.matrixWorld);
     }
-    
+
     if (local && motionController?.bones?.[11]) {
       const wristBone = new Vector3();
       motionController.bones[11].getWorldPosition(wristBone);
@@ -137,24 +138,26 @@ function RemoteViewer({
     };
   }, [local, remoteTableY, userId]);
 
+  const color = formatRgb(propColor);
+
   return (
     <>
       {!local && (
         <mesh name={`${userId}-head`} visible={false}>
           <sphereGeometry args={[0.1, 32, 32]} />
-          <meshStandardMaterial color={formatRgb(color)} />
+          <meshStandardMaterial color={color} />
         </mesh>
       )}
       <group {...playerTransform}>
         <group position={[0, local ? tableY : remoteTableY, -0.2]}>
           <mesh>
             <boxGeometry args={[0.7, 0.01, 0.3]} />
-            <meshStandardMaterial color={formatRgb(color)} />
+            <meshStandardMaterial color={color} />
           </mesh>
           <mesh ref={ref} position={[0, 0.05, 0]}>
             <boxGeometry args={[0.7, 0.1, 0.3]} />
             <meshStandardMaterial
-              color={formatRgb(color)}
+              color={color}
               transparent={true}
               opacity={0.5}
             />
@@ -162,7 +165,7 @@ function RemoteViewer({
         </group>
         <group position={[0, 0.3, 0]} visible={false}>
           <Text
-            color={formatRgb(color)}
+            color={color}
             material-transparent={true}
             material-opacity={0.6}
             anchorX="center"

@@ -9,7 +9,7 @@ import {
 } from "@react-three/drei";
 import { XR, Controllers, VRButton } from "@react-three/xr";
 // import { Selection } from "@react-three/postprocessing";
-import useSocket/* , { useDebug } */ from "@/stores/socket";
+import useSocket /* , { useDebug } */ from "@/stores/socket";
 // import CustomVRButton from "@/components/dom/VRButton";
 import Debug from "./debug";
 // import Effects from "./Effects";
@@ -41,7 +41,7 @@ export default function Scene({ children, ...props }) {
   const inlineCamZ = /* pizzaRadius * */ 1.7;
   return (
     <>
-      {env && (
+      {env && env !== "spectator" && (
         <VRButton
           style={{
             ...buttonStyle,
@@ -69,35 +69,39 @@ export default function Scene({ children, ...props }) {
           }}
         />
       )}
-      <div style={{ position: "absolute", bottom: 0, width: "100vw" }}>
-        <div
-          style={{
-            position: "relative",
-            display: "flex",
-            justifyContent: "space-between",
-            margin: 20,
-          }}
-        >
-          <a style={{ ...buttonStyle }} href="?env=VR1">
-            VR1
-          </a>
-          <a style={{ ...buttonStyle }} href="?env=VR2">
-            VR2
-          </a>
+      {env !== "spectator" && (
+        <div style={{ position: "absolute", bottom: 0, width: "100vw" }}>
+          <div
+            style={{
+              position: "relative",
+              display: "flex",
+              justifyContent: "space-between",
+              margin: 20,
+            }}
+          >
+            <a style={{ ...buttonStyle }} href="?env=VR1">
+              VR1
+            </a>
+            <a style={{ ...buttonStyle }} href="?env=VR2">
+              VR2
+            </a>
+          </div>
         </div>
-      </div>
-
+      )}
       <Canvas
         {...props}
         dpr={userId === "spectator" ? 0.25 : 1}
-        /* shadows */ onCreated={(/* { gl, xr, ...rest } */) => {
-          // if (window.location.pathname === "/") {
-          //   // document.body.appendChild(CustomVRButton.createButton(gl));
-          // }
-          // if (rest.scene) {
-          //   rest.scene.background = new Color("skyblue")
-          // }
-        }}
+        /* shadows */
+        onCreated={
+          (/* { gl, xr, ...rest } */) => {
+            // if (window.location.pathname === "/") {
+            //   // document.body.appendChild(CustomVRButton.createButton(gl));
+            // }
+            // if (rest.scene) {
+            //   rest.scene.background = new Color("skyblue")
+            // }
+          }
+        }
       >
         {/* <Selection> */}
         {/* <Stage
