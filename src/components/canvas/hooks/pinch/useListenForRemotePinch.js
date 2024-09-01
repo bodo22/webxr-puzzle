@@ -29,7 +29,7 @@ export default function useListenForRemotePinch(ref, selectOrPinchEnd, props) {
       if (dataIsForThisObj) {
         if (pinched && props.pinchStart < pinchData.pinchStart) {
           // the server has decided that a remote pinch on this object
-          // is younger we can end the current local pinch
+          // is younger, so we can end the current local pinch
           setLastRemotePinchOverride(pinched[0]);
           selectOrPinchEnd({ handedness: pinched[0] });
           console.log("end local pinch because of remote pinch", pinched);
@@ -88,6 +88,7 @@ export default function useListenForRemotePinch(ref, selectOrPinchEnd, props) {
     log,
     collideObjectParent,
     setLastRemotePinchOverride,
+    slerpAfterBothHandover,
   ]);
   React.useEffect(() => {
     function handlePieceStateData(pieceStateData) {

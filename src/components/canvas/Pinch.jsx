@@ -41,7 +41,7 @@ const Pinch = React.forwardRef(({ children, ignore, ...props }, ref) => {
   // useHandEvent("pinchstart", selectOrPinchStart);
   // useHandEvent("pinchend", selectOrPinchEnd);
 
-  useUpdateGroup(ref, selectOrPinchEnd, props);
+  useUpdateGroup(ref, props);
   useListenForRemotePinch(ref, selectOrPinchEnd, props);
 
   React.useEffect(() => {
