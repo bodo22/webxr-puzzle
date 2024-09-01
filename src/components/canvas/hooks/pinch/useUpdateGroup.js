@@ -95,7 +95,7 @@ export default function useUpdateGroup(ref, props) {
         ref.current.scale
       );
       ref.current.scale.setScalar(scale);
-      
+
       previousTransformRef.current = handTransform.clone();
       return ref.current.matrix.clone();
     }
@@ -104,7 +104,7 @@ export default function useUpdateGroup(ref, props) {
       frozenHandQuatRef.current = localHandQuat.clone();
     }
     prevQuat = frozenHandQuatRef.current.clone();
-    
+
     ref.current.position.setFromMatrixPosition(negatedMat4);
 
     const tmpObj = scene.getObjectByName("tmpPinchObj");
@@ -197,7 +197,6 @@ export default function useUpdateGroup(ref, props) {
     }
     const newRemoteMatrix = getNewTransformForRemote();
 
-    
     // update parents, update children:
     ref.current.updateWorldMatrix(false, true);
     previousHandedness.current = handedness;
