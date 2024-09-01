@@ -7,11 +7,21 @@ import {
   TriggerMotionController,
 } from "@/utils/MotionController";
 import useSocket from "@/stores/socket";
+import { getServerDateNow } from "@/components/canvas/hooks/useGetServerDate";
 
 const initialGesture = "default";
 
 const initialState = {
   hands: {
+    left: undefined,
+    right: undefined,
+  },
+  motionControllers: {
+    left: undefined,
+    right: undefined,
+  },
+  // TODO: remove?
+  skinnedMeshes: {
     left: undefined,
     right: undefined,
   },
@@ -26,6 +36,14 @@ const initialState = {
   gestures: {
     left: initialGesture,
     right: initialGesture,
+  },
+  bvhColliding: {
+    left: false,
+    right: false,
+  },
+  lastRemotePinchOverride: {
+    left: 0,
+    right: 0,
   },
 };
 
@@ -42,16 +60,45 @@ const mutations = (set, get) => {
   });
 
   return {
-    setHand(handedness, hand) {
-      set({ hands: { ...get().hands, [handedness]: hand } });
-    },
-    setPinchedObject(handedness, pinchedObject) {
+    setSkinnedMesh(handedness, skinnedMesh) {
       set({
-        pinchedObjects: {
-          ...get().pinchedObjects,
-          [handedness]: pinchedObject,
+        skinnedMeshes: {
+          ...get().skinnedMeshes,
+          [handedness]: skinnedMesh,
         },
       });
+    },
+    setHand(handedness, hand) {
+      const motionController =
+        hand &&
+        hand.children.find(
+          (child) => child.constructor.name === "OculusHandModel"
+        )?.motionController;
+      set({
+        hands: {
+          ...get().hands,
+          [handedness]: hand,
+        },
+        motionControllers: {
+          ...get().motionControllers,
+          [handedness]: motionController,
+        },
+      });
+    },
+    setPinchedObject(handedness, pinchedObject) {
+      const otherHandName = handedness === "left" ? "right" : "left";
+      console.log("setting pinched object", handedness, pinchedObject);
+      const newPinchedObjects = {
+        ...get().pinchedObjects,
+        [handedness]: pinchedObject,
+      };
+      if (
+        pinchedObject &&
+        get().pinchedObjects[otherHandName] === pinchedObject
+      ) {
+        newPinchedObjects[otherHandName] = undefined;
+      }
+      set({ pinchedObjects: newPinchedObjects });
     },
     setGesture(handedness, gesture) {
       log({
@@ -74,6 +121,22 @@ const mutations = (set, get) => {
         },
       });
     },
+    setBvhColliding(handedness, bvhColliding) {
+      set({
+        bvhColliding: {
+          ...get().bvhColliding,
+          [handedness]: bvhColliding,
+        },
+      });
+    },
+    setLastRemotePinchOverride(handedness) {
+      set({
+        lastRemotePinchOverride: {
+          ...get().lastRemotePinchOverride,
+          [handedness]: getServerDateNow(),
+        },
+      });
+    },
   };
 };
 
@@ -92,7 +155,9 @@ export function useHandEvent(type, callback) {
         ).motionController;
         let pinchingController;
         if (event.target?.parent?.currentFidelity?.level === "blob") {
-          pinchingController = new TriggerMotionController(event.target.parent.blobGroup);
+          pinchingController = new TriggerMotionController(
+            event.target.parent.blobGroup
+          );
         } else {
           pinchingController = new HandMotionController(handMotionController);
         }
@@ -110,10 +175,13 @@ export function useHandEvent(type, callback) {
   }, [type, hands, callback]);
 }
 
-export function useIsObjectPinched(name) {
+// if byHand is not set, it will return true if any hand is pinching the object
+// if byHand is set, it will return true only if the specified hand is pinching the object
+export function useIsObjectPinched(name, byHand) {
   const pinchedObjects = useInteracting((state) => state.pinchedObjects);
   return Object.entries(pinchedObjects).find(
-    ([handedness, po]) => po && po === name
+    ([handedness, po]) =>
+      po && po === name && (!byHand || handedness === byHand)
   );
 }
 

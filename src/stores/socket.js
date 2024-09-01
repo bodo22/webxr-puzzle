@@ -8,6 +8,7 @@ import { fakeInputSourceFactory } from "@/utils";
 import RemoteXRController from "@/components/canvas/remote/RemoteXRController";
 
 import createWindow from "live-moving-average";
+import { getServerDateNow } from "@/components/canvas/hooks/useGetServerDate";
 
 const movingAverageWindowSize = 10;
 
@@ -25,6 +26,8 @@ const initialState = {
   },
   level: {},
   fidelity: {},
+  objectOrientation: { level: "towardGiver" },
+  pizzaPositions: [],
 };
 
 const adminStateEvents = [
@@ -34,6 +37,7 @@ const adminStateEvents = [
   "debug",
   "level",
   "fidelity",
+  "objectOrientation",
 ];
 
 const mutations = (set, get) => {
@@ -56,13 +60,13 @@ const mutations = (set, get) => {
       if (userIdIndex === -1) {
         throw new Error(`userIdIndex not found, maybe not set?`);
       }
-      const newUsersWithWithAverageWindow = newUsers.map(user => {
+      const newUsersWithWithAverageWindow = newUsers.map((user) => {
         return {
-          window:  createWindow(movingAverageWindowSize, 0),
+          window: createWindow(movingAverageWindowSize, 0),
           receivedHandData: 0,
           ...user,
-        }
-      })
+        };
+      });
       set({ users: newUsersWithWithAverageWindow, userId, userIdIndex });
     })
     .on("handData", (data) => {
@@ -90,11 +94,11 @@ const mutations = (set, get) => {
           target.update(joints, fakeInputSource, data, handedness);
         });
 
-      const received = Date.now();
-      const user = get().users.find(u => u.userId === data.userId);
-      if (user)  {
+      const received = getServerDateNow();
+      const user = get().users.find((u) => u.userId === data.userId);
+      if (user) {
         user.receivedHandData++;
-        user.window.push(received - data.timestamp)
+        user.window.push(received - data.timestamp);
         if (data.fidelity && user.receivedHandData % 10 === 0) {
           useSocket.getState().log({
             type: "remoteHandUpdate",
@@ -125,6 +129,9 @@ const mutations = (set, get) => {
   function emitHandData(handData) {
     socket.emit("handData", { userId: get().userId, ...handData });
   }
+  function emitViewerData(viewerData) {
+    socket.emit("viewerData", { userId: get().userId, ...viewerData });
+  }
   function emitPinchData(pinchData) {
     socket.emit("pinchData", { userId: get().userId, ...pinchData });
   }
@@ -134,6 +141,7 @@ const mutations = (set, get) => {
 
   return {
     sendHandData: throttle(emitHandData, wait),
+    sendViewerData: throttle(emitViewerData, wait),
     sendPinchData: throttle(emitPinchData, wait),
     updatePiece(name, key, value) {
       const pieces = [...get().pieces].map((piece) => {
@@ -143,7 +151,7 @@ const mutations = (set, get) => {
         return piece;
       });
       set({ pieces });
-      const newPiece = get().pieces.find((p) => p.name === name)
+      const newPiece = get().pieces.find((p) => p.name === name);
       const pieceStateData = {
         name: newPiece.name,
       };
@@ -161,8 +169,9 @@ const mutations = (set, get) => {
       }
     },
     log(log) {
-      socket.emit("log", { ...log, timestamp: Date.now() });
+      socket.emit("log", { ...log, timestamp: getServerDateNow() });
     },
+    set,
   };
 };
 

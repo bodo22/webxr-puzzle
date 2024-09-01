@@ -94,8 +94,9 @@ function getGesture(fingerGestures) {
   );
 }
 
-function getFingerGestures(handModel) {
+export function getFingerGestures(handModel) {
   const bones = handModel.motionController.bones;
+  if (bones.length === 0) return {};
   const angles = Object.entries(anglesToMeasure).reduce(
     (curr, [fingerName, finger]) => {
       const bonesToMeasure = finger.jointNames.map(

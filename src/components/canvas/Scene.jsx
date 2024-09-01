@@ -8,10 +8,8 @@ import {
   // Stage,
 } from "@react-three/drei";
 import { XR, Controllers, VRButton } from "@react-three/xr";
-import { Selection } from "@react-three/postprocessing";
-import { /* useSocket, */ useDebug } from "@/stores/socket";
-// import { DoubleSide, MathUtils, Vector3 } from "three";
-
+// import { Selection } from "@react-three/postprocessing";
+import useSocket/* , { useDebug } */ from "@/stores/socket";
 // import CustomVRButton from "@/components/dom/VRButton";
 import Debug from "./debug";
 // import Effects from "./Effects";
@@ -31,16 +29,16 @@ const buttonStyle = {
 };
 export default function Scene({ children, ...props }) {
   // Everything defined in here will persist between route changes, only children are swapped
-  const { pizzaRadius } = useDebug();
-  // const userId = useSocket((state) => state.userId);
+  // const { pizzaRadius } = useDebug();
+  const userId = useSocket((state) => state.userId);
   const cam = React.useRef();
-  React.useEffect(() => {
-    // cam?.current?.lookAt(0, 0, -pizzaRadius);
-  }, [pizzaRadius]);
+  // React.useEffect(() => {
+  //   // cam?.current?.lookAt(0, 0, -pizzaRadius);
+  // }, [pizzaRadius]);
 
   const params = new URL(document.location).searchParams;
   const env = params.get("env");
-  const inlineCamZ = pizzaRadius * 1.7;
+  const inlineCamZ = /* pizzaRadius * */ 1.7;
   return (
     <>
       {env && (
@@ -59,6 +57,7 @@ export default function Scene({ children, ...props }) {
               // "hand-tracking",
               // "layers",
               // "dom-overlay",
+              // "plane-detection",
             ],
             optionalFeatures: [
               "local-floor",
@@ -90,15 +89,18 @@ export default function Scene({ children, ...props }) {
 
       <Canvas
         {...props}
-        // dpr={userId === "spectator" ? 0.25 : 1}
-        /* shadows */ onCreated={({ gl, xr, ...rest }) => {
+        dpr={userId === "spectator" ? 0.25 : 1}
+        /* shadows */ onCreated={(/* { gl, xr, ...rest } */) => {
           // if (window.location.pathname === "/") {
           //   // document.body.appendChild(CustomVRButton.createButton(gl));
           // }
+          // if (rest.scene) {
+          //   rest.scene.background = new Color("skyblue")
+          // }
         }}
       >
-        <Selection>
-          {/* <Stage
+        {/* <Selection> */}
+        {/* <Stage
             preset={{ main: [0, 50, 25], fill: [0, 50, 20] }}
             // preset="soft"
             // | 'rembrandt' // default
@@ -114,26 +116,27 @@ export default function Scene({ children, ...props }) {
             shadows={false}
             center={false}
           > */}
-          <XR
-            // foveation={1}
-            referenceSpace="local"
-            // referenceSpace="viewer"
-            // referenceSpace="unbounded"
-            sessionInit={{
-              optionalFeatures: [
-                "local-floor",
-                "bounded-floor",
-                "hand-tracking" /* , 'layers' */,
-              ],
-            }}
-          >
-            {/* camera position in XR mode is managed by moving the xr player, this is just for inline mode, see index.jsx */}
-            <PerspectiveCamera
-              makeDefault
-              position={[0, 1, inlineCamZ]}
-              ref={cam}
-            />
-            {/* <OrthographicCamera makeDefault position={[0, .8, 0]} ref={cam}
+        <XR
+          // foveation={1}
+          referenceSpace="local"
+          // referenceSpace="viewer"
+          // referenceSpace="unbounded"
+          sessionInit={{
+            optionalFeatures: [
+              "local-floor",
+              "bounded-floor",
+              "hand-tracking",
+              // "layers",
+            ],
+          }}
+        >
+          {/* camera position in XR mode is managed by moving the xr player, this is just for inline mode, see index.jsx */}
+          <PerspectiveCamera
+            makeDefault
+            position={[0, 1, inlineCamZ]}
+            ref={cam}
+          />
+          {/* <OrthographicCamera makeDefault position={[0, .8, 0]} ref={cam}
               zoom={1}
               top={.5}
               bottom={-.5}
@@ -143,16 +146,16 @@ export default function Scene({ children, ...props }) {
               far={10}
       
             /> */}
-            <Controllers />
-            {children}
-            <Preload all />
-            {/* <Sky sunPosition={[10, 10, -1000]} distance={10} /> */}
-            {/* <DivisionPlane /> */}
-            {/* <Effects /> */}
-            <Debug name="debug" />
-          </XR>
-          {/* </Stage> */}
-        </Selection>
+          <Controllers />
+          {children}
+          <Preload all />
+          {/* <Sky sunPosition={[10, 10, -1000]} distance={10} /> */}
+          {/* <DivisionPlane /> */}
+          {/* <Effects /> */}
+          <Debug name="debug" />
+        </XR>
+        {/* </Stage> */}
+        {/* </Selection> */}
       </Canvas>
     </>
   );

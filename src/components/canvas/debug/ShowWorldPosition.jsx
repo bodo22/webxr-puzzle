@@ -3,8 +3,9 @@ import { useFrame } from "@react-three/fiber";
 import { Vector3 } from "three";
 import { useThree, createPortal } from "@react-three/fiber";
 import { useDebug } from "@/stores/socket";
+import { Text } from "@react-three/drei";
 
-export default function ShowWorldPosition({ target }) {
+export default function ShowWorldPosition({ target, text }) {
   const ref = React.useRef();
   const scene = useThree((state) => state.scene);
   const { piecesPos } = useDebug();
@@ -22,11 +23,23 @@ export default function ShowWorldPosition({ target }) {
   }
 
   return createPortal(
-    <group>
-      <mesh ref={ref}>
+    <group ref={ref}>
+      <mesh>
         <sphereGeometry args={[0.03]} />
         <meshBasicMaterial color="blue" />
       </mesh>
+      {text && (
+        <Text
+          color="white"
+          // material-transparent={true}
+          // material-opacity={0.6}
+          // anchorX="center"
+          // anchorY="middle"
+          fontSize={0.05}
+        >
+          {text}
+        </Text>
+      )}
     </group>,
     scene
   );

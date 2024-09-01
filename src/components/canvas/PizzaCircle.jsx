@@ -5,9 +5,11 @@ import { formatRgb } from "culori";
 
 import useSocket, { useUsers, useDebug } from "@/stores/socket";
 
-export default function PizzaCircle({ setPizzaPositions, pizzaPositions }) {
+export default function PizzaCircle() {
+  const pizzaPositions = useSocket((state) => state.pizzaPositions);
+  const set = useSocket((state) => state.set);
   const userIdIndex = useSocket((state) => state.userIdIndex);
-  const { studyMode } = useSocket((state) => state.level);
+  const studyMode = useSocket((state) => state.level.studyMode);
   const users = useUsers();
   const usersLength = users.length;
   const circleMeshRef = React.useRef();
@@ -29,16 +31,9 @@ export default function PizzaCircle({ setPizzaPositions, pizzaPositions }) {
       if (studyMode || usersLength === 2) {
         points.splice(1, 1);
       }
-      setPizzaPositions(points);
+      set({ pizzaPositions: points });
     }
-  }, [
-    setPizzaPositions,
-    circleSegments,
-    userIdIndex,
-    usersLength,
-    pizzaRadius,
-    studyMode,
-  ]);
+  }, [set, circleSegments, userIdIndex, usersLength, pizzaRadius, studyMode]);
 
   return (
     <>
@@ -60,32 +55,34 @@ export default function PizzaCircle({ setPizzaPositions, pizzaPositions }) {
           color="red"
         />
       </mesh>
-      {pizzaNums &&
-        pizzaPositions.map((position, index) => {
-          const color = users[index]?.color;
-          const key = `${circleSegments}-index-position-for-${index}`;
-          return (
+      {pizzaPositions.map((position, index) => {
+        const color = users[index]?.color;
+        const key = `${circleSegments}-index-position-for-${index}`;
+        return (
+          <React.Fragment key={key}>
             <group
               position={position}
               rotation-y={MathUtils.degToRad(
                 userIdIndex * -(360 / users.length)
               )}
-              key={key}
               name={key}
             >
-              <Text
-                color={formatRgb(color)}
-                material-transparent={true}
-                material-opacity={0.6}
-                anchorX="center"
-                anchorY="middle"
-                fontSize={0.25}
-              >
-                {index}
-              </Text>
+              {pizzaNums && (
+                <Text
+                  color={formatRgb(color)}
+                  material-transparent={true}
+                  material-opacity={0.6}
+                  anchorX="center"
+                  anchorY="middle"
+                  fontSize={0.2}
+                >
+                  {index}
+                </Text>
+              )}
             </group>
-          );
-        })}
+          </React.Fragment>
+        );
+      })}
     </>
   );
 }

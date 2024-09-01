@@ -27,6 +27,7 @@ dist-ssr
 public/models
 public/handData
 public/sounds
+public/*.html
+public/*.js
 
-src/assets/handData
-src/assets/sounds
+src/assets

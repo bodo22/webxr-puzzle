@@ -14,7 +14,7 @@ export function getHandPosition(hand) {
   return position;
 }
 
-export function getHandTransform(hand) {
+export function getHandTransform(hand, scale = new Vector3(1, 1, 1)) {
   const quaternion = new Quaternion();
   getHandRotationMatrix(hand).decompose(
     new Vector3(),
@@ -22,8 +22,7 @@ export function getHandTransform(hand) {
     new Vector3()
   );
   const position = getHandPosition(hand);
-
-  return new Matrix4().compose(position, quaternion, new Vector3(1, 1, 1));
+  return new Matrix4().compose(position, quaternion, scale);
 }
 
 export function getHandRotationMatrix(hand) {

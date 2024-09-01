@@ -26,6 +26,95 @@ export const jointNames = [
   { jointName: "pinky-finger-tip" },
 ];
 
+export const fingerJointsToBoneMap = {
+  thumb: {
+    distal: {
+      from: "thumb-phalanx-distal",
+      to: "thumb-tip",
+    },
+    // proximal: {
+    //   from: "thumb-phalanx-proximal",
+    //   to: "thumb-phalanx-distal",
+    // },
+    metacarpal: {
+      from: "thumb-metacarpal",
+      to: "thumb-phalanx-proximal",
+    },
+  },
+  index: {
+    distal: {
+      from: "index-finger-phalanx-distal",
+      to: "index-finger-tip",
+    },
+    // intermediate: {
+    //   from: "index-finger-phalanx-intermediate",
+    //   to: "index-finger-phalanx-distal",
+    // },
+    // proximal: {
+    //   from: "index-finger-phalanx-proximal",
+    //   to: "index-finger-phalanx-intermediate",
+    // },
+    metacarpal: {
+      from: "index-finger-metacarpal",
+      to: "index-finger-phalanx-proximal"
+    },
+  },
+  middle: {
+    distal: {
+      from: "middle-finger-phalanx-distal",
+      to: "middle-finger-tip",
+    },
+    // intermediate: {
+    //   from: "middle-finger-phalanx-intermediate",
+    //   to: "middle-finger-phalanx-distal",
+    // },
+    // proximal: {
+    //   from: "middle-finger-phalanx-proximal",
+    //   to: "middle-finger-phalanx-intermediate",
+    // },
+    metacarpal: {
+      from: "middle-finger-metacarpal",
+      to: "middle-finger-phalanx-proximal"
+    },
+  },
+  ring: {
+    distal: {
+      from: "ring-finger-phalanx-distal",
+      to: "ring-finger-tip",
+    },
+    // intermediate: {
+    //   from: "ring-finger-phalanx-intermediate",
+    //   to: "ring-finger-phalanx-distal",
+    // },
+    // proximal: {
+    //   from: "ring-finger-phalanx-proximal",
+    //   to: "ring-finger-phalanx-intermediate",
+    // },
+    metacarpal: {
+      from: "ring-finger-metacarpal",
+      to: "ring-finger-phalanx-proximal"
+    },
+  },
+  pinky: {
+    distal: {
+      from: "pinky-finger-phalanx-distal",
+      to: "pinky-finger-tip",
+    },
+    // intermediate: {
+    //   from: "pinky-finger-phalanx-intermediate",
+    //   to: "pinky-finger-phalanx-distal",
+    // },
+    // proximal: {
+    //   from: "pinky-finger-phalanx-proximal",
+    //   to: "pinky-finger-phalanx-intermediate",
+    // },
+    metacarpal: {
+      from: "pinky-finger-metacarpal",
+      to: "pinky-finger-phalanx-proximal"
+    },
+  },
+};
+
 function values() {
   return [...new Array(25).keys()];
   // return jointNames;

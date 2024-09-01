@@ -6,41 +6,32 @@ import {
   useFrame,
 } from "@react-three/fiber";
 import Stats from "stats-gl";
-import { useLog } from "@/stores/socket";
-
-// const fps = [];
+import useSocket, { useLog } from "@/stores/socket";
 
 export function StatsGl({ className, parent, ...props }) {
   const gl = useThree((state) => state.gl);
-  const log = useLog()
+  const log = useLog();
 
   const stats = React.useMemo(() => {
     const statsGl = new Stats({
-      logsPerSecond: 20, 
-      samplesLog: 20, 
-      samplesGraph: 20, 
-      precision: 2, 
+      logsPerSecond: 20,
+      samplesLog: 20,
+      samplesGraph: 20,
+      precision: 2,
       horizontal: false,
-      minimal: false, 
-      mode: 0 
+      minimal: false,
+      mode: 0,
     });
     statsGl.init(gl.domElement);
     return statsGl;
   }, [gl]);
+  const objectOrientation = useSocket((state) => state.objectOrientation);
+  const level = useSocket((state) => state.level);
 
   useFrame((state, delta, xrFrame) => {
-    // console.log(xrFrame)
-    // console.log(stats);
-    // fps.push(stats.frames)
-    // if (fps.length > 99) {
-    //     fps.shift()
-    // }
-    // console.log(fps.reduce((prev, curr) => prev + curr, 0) / 100);
     const time = (performance || Date).now();
 
     if (time >= stats.prevTime + 1000) {
-      // const fps = (stats.frames * 1000) / (time - stats.prevTime);
-      // console.log(stats.frames,  stats, stats.averageCpu.logs);
       const memory = performance.memory;
       log({
         type: "fps",
@@ -59,11 +50,11 @@ export function StatsGl({ className, parent, ...props }) {
         jsHeapSizeLimit: memory.jsHeapSizeLimit,
         totalJSHeapSize: memory.totalJSHeapSize,
         usedJSHeapSize: memory.usedJSHeapSize,
-        predictedDisplayTime: xrFrame?.predictedDisplayTime
-      })
+        predictedDisplayTime: xrFrame?.predictedDisplayTime,
+        objectOrientation,
+        level,
+      });
     }
-    // console.log(stats.averageCpu.logs.reduce((prev, curr) => prev + curr, 0) / 100);
-    // console.log(stats.averageGpu.logs.reduce((prev, curr) => prev + curr, 0) / 100);
   });
 
   React.useEffect(() => {

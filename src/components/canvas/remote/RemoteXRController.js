@@ -5,6 +5,8 @@ import defaultOverride from "@/assets/handData/gesture-default-1.json";
 import pinchOverride from "@/assets/handData/gesture-pinch-1.json";
 import loadGltf from "@/utils/loadGltf.js";
 import { jointNames } from "@/utils/FakeInputSourceFactory";
+import { Vector3 } from "three";
+import { getServerDateNow } from "../hooks/useGetServerDate";
 // import useSocket from "@/stores/socket";
 
 function makeRemoteJointsType(joints) {
@@ -23,7 +25,7 @@ function makeRemoteJointsType(joints) {
   }, {});
 }
 
-const jointPosesOverrides = {
+export const jointPosesOverrides = {
   fist: makeRemoteJointsType(fistOverride[0].joints),
   point: makeRemoteJointsType(pointOverride[0].joints),
   default: makeRemoteJointsType(defaultOverride[0].joints),
@@ -38,7 +40,7 @@ loadGltf("models/arrow.glb", (gltf) => {
   pointMesh = gltf.scene;
 });
 
-export default class XRController extends THREE.Group {
+export default class RemoteXRController extends THREE.Group {
   constructor(data, handedness) {
     super();
     this.userId = data.userId;
@@ -114,18 +116,26 @@ export default class XRController extends THREE.Group {
       },
     };
     const fakeReferenceSpace = "local";
-    this.lastXRUpdate = Date.now();
+    this.lastXRUpdate = getServerDateNow();
     this.webXRController.update(fakeInputSource, fakeFrame, fakeReferenceSpace);
   }
 
   update(joints, fakeInputSource, data, handedness) {
+    this.currentJoints = joints;
     const fidelity = data.fidelity;
     const pose = data.gestures[handedness];
     // const predictedDisplayTime = data.predictedDisplayTime;
-    Object.values(this.blobs).forEach((mesh) => {
-      mesh.visible = false;
-    });
-    this.hand.visible = false;
+    // Object.values(this.blobs).forEach((mesh) => {
+    //   mesh.visible = false;
+    // });
+    // this.hand.visible = false;
+    if (this?.skinnedMesh?.material) {
+      if (data?.pinchedObjects?.[handedness]) {
+        this.skinnedMesh.material.opacity = 0.15;
+      } else {
+        this.skinnedMesh.material.opacity = 1;
+      }
+    }
     const fidelityChange = this.currentFidelity?.level !== fidelity?.level;
     this.currentFidelity = fidelity;
     // const poseChange = this.currentPose && this.currentPose !== pose;
@@ -169,7 +179,7 @@ export default class XRController extends THREE.Group {
         } else {
           console.warn("gesture unknown", pose, this.hand);
         }
-        this.hand.visible = true;
+        // this.hand.visible = true;
         break;
       }
       case "virtual": {
@@ -180,7 +190,7 @@ export default class XRController extends THREE.Group {
           h.matrix.decompose(h.position, h.quaternion, h.scale);
           h.updateMatrixWorld(true);
         }
-        this.hand.visible = true;
+        // this.hand.visible = true;
         break;
       }
       default: {
@@ -196,6 +206,18 @@ export default class XRController extends THREE.Group {
     //     target: this.hand,
     //   });
     // }
+  }
+
+  setDistanceToLocalHand(localHandPos) {
+    if (this.currentJoints?.[0]?.transformMatrix) {
+      const remoteHandPos = new Vector3(
+        this.currentJoints[0].transformMatrix[12],
+        this.currentJoints[0].transformMatrix[13],
+        this.currentJoints[0].transformMatrix[14]
+      );
+      const distance = remoteHandPos.distanceTo(localHandPos);
+      this.distanceToLocalHand = distance;
+    }
   }
 
   dispose() {

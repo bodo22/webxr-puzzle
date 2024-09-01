@@ -1,107 +1,145 @@
 import React from "react";
 import { OculusHandModel } from "three-stdlib";
-import { extend, createPortal } from "@react-three/fiber";
+import { extend, createPortal, useFrame, useThree } from "@react-three/fiber";
 
-import /* useSocket, */ { useDebug } from "@/stores/socket";
+import useSocket, { useDebug } from "@/stores/socket";
 import useInteracting from "@/stores/interacting";
 
 import Axes from "@/components/canvas/debug/Axes";
+import HandCollisionBody from "./HandCollisionBody";
 
 extend({ OculusHandModel });
 
-export default function Hand({ target, color, handedness, local, userId }) {
+function JointManager({ target, handModelRef, handedness }) {
+  const xrManager = useThree((state) => state.gl.xr);
+
+  const { freezeHand } = useSocket((state) => state.level);
+
+  const isPinchingObject = !!useInteracting(
+    (state) => state.pinchedObjects[handedness]
+  );
+
+  const isBvhColliding = !!useInteracting(
+    (state) => state.bvhColliding[handedness]
+  );
+
+  const freezeHandDuringGrab = isPinchingObject && freezeHand === "onGrab";
+  const freezeHandDuringCollision =
+    isBvhColliding && freezeHand === "onCollision";
+
+  useFrame((_, __, frame) => {
+
+    const { controller } = handModelRef.current;
+    const referenceSpace = xrManager.getReferenceSpace();
+    if (referenceSpace && target.inputSource && controller) {
+      const wristInputjoint = target.inputSource.hand.get("wrist");
+      const wristJointPose = frame.getJointPose(
+        wristInputjoint,
+        referenceSpace
+      );
+      if (!wristJointPose) {
+        return;
+      }
+
+      const refSpaceToWrist = referenceSpace.getOffsetReferenceSpace(
+        wristJointPose.transform
+      );
+      const h = target.hand;
+      h.matrix.fromArray(wristJointPose.transform.matrix);
+      h.matrix.decompose(h.position, h.quaternion, h.scale);
+      h.updateMatrix();
+
+      if (freezeHandDuringGrab || freezeHandDuringCollision) {
+        return;
+      } else {
+        for (const inputjoint of target.inputSource.hand.values()) {
+          // TODO: perf: replace getJointPose with fillPoses
+          const jointPose = frame.getJointPose(inputjoint, refSpaceToWrist);
+          // The transform of this joint will be updated with the joint pose on each frame
+          const joint = controller.joints[inputjoint.jointName];
+
+          if (jointPose !== null) {
+            const joint = controller.joints[inputjoint.jointName];
+            joint.matrix.fromArray(jointPose.transform.matrix);
+            joint.matrix.decompose(
+              joint.position,
+              joint.quaternion,
+              joint.scale
+            );
+            joint.jointRadius = jointPose.radius;
+          }
+          joint.visible = jointPose !== null;
+        }
+      }
+    }
+  });
+
+  return null;
+}
+
+const params = new URL(document.location).searchParams;
+const fakeLocalToggle = params.get("fakeLocalToggle") === "true";
+
+export default function Hand({ target, handedness, local, userId }) {
+  const userIdSelf = useSocket((state) => state.userId);
+  const fakeLocal = fakeLocalToggle && userId === userIdSelf;
   const handModelRef = React.useRef();
-  const handMeshModelRef = React.useRef();
   const { hands } = useDebug();
-  // const socket = useSocket((state) => state.socket);
-  // const gesture = useInteracting((state) => state.gestures[handedness]);
-  // const { r, g, b } = color;
-  const { hand/* , blob */ } = target;
-
-  // const setColor = React.useCallback(
-  //   (color) => {
-  //     // if (!color) {
-  //     //   blob?.material.color.setRGB(r, g, b);
-  //     //   handMeshModelRef?.current?.material.color.setRGB(r, g, b);
-  //     // } else {
-  //     //   blob?.material.color.set(color);
-  //     //   handMeshModelRef?.current?.material.color.set(color);
-  //     // }
-  //   },
-  //   [r, g, b, blob]
-  // );
-
+  const setSkinnedMesh = useInteracting((state) => state.setSkinnedMesh);
+  const skinnedMesh = useInteracting(
+    (state) => state.skinnedMeshes[handedness]
+  );
+  const { hand } = target;
+  const pinchedObject = useInteracting(
+    (state) => state.pinchedObjects[handedness]
+  );
   React.useLayoutEffect(() => {
     const handModel = handModelRef.current;
     if (handModel) {
       function childAdded(event) {
         const mesh = event.child.getObjectByProperty("type", "SkinnedMesh");
-        handMeshModelRef.current = mesh;
+        mesh.material.transparent = true;
+        if (local) {
+          setSkinnedMesh(handedness, mesh);
+        } else {
+          hand.parent.skinnedMesh = mesh;
+        }
         if (local && userId === "AR") {
           // to hide hands in AR
           mesh.material.colorWrite = false;
           mesh.material.depthWrite = false;
           mesh.material.depthTest = false;
         }
-        // setColor();
       }
       handModel.addEventListener("childadded", childAdded);
-      // setColor();
       return () => {
         handModel.removeEventListener("childadded", childAdded);
       };
     }
-  }, [/* setColor, */ local, userId]);
+  }, [local, userId, setSkinnedMesh, handedness, hand]);
 
-  // const updateColor = React.useCallback(
-  //   (gesture) => {
-  //     switch (gesture) {
-  //       case "pinch":
-  //         setColor("green");
-  //         break;
-  //       case "fist":
-  //         setColor("red");
-  //         break;
-  //       case "point":
-  //         setColor("pink");
-  //         break;
-  //       default:
-  //         setColor();
-  //         break;
-  //     }
-  //   },
-  //   [setColor]
-  // );
-
-  // local hands
-  // React.useEffect(() => {
-  //   if (local) {
-  //     updateColor(gesture);
-  //   }
-  // }, [local, gesture, updateColor]);
-
-  // remote hands
-  // React.useEffect(() => {
-  //   function onHandData(data) {
-  //     if (data.userId === userId && !!data?.gestures?.[handedness]) {
-  //       updateColor(data.gestures[handedness]);
-  //     }
-  //   }
-  //   socket.on("handData", onHandData);
-  //   return () => socket.off("handData", onHandData);
-  // }, [socket, handedness, userId, updateColor]);
+  React.useEffect(() => {
+    if (!skinnedMesh) {
+      return;
+    }
+    if (pinchedObject) {
+      skinnedMesh.material.opacity = 0.15;
+    } else {
+      skinnedMesh.material.opacity = 1;
+    }
+  }, [skinnedMesh, pinchedObject]);
 
   const setHand = useInteracting((state) => state.setHand);
   React.useEffect(() => {
-    if (local) {
+    if (local || fakeLocal) {
       setHand(handedness, hand);
     }
     return () => {
-      if (local) {
+      if (local || fakeLocal) {
         setHand(handedness, undefined);
       }
     };
-  }, [setHand, hand, handedness, local]);
+  }, [setHand, hand, handedness, local, fakeLocal]);
 
   return (
     <>
@@ -109,6 +147,25 @@ export default function Hand({ target, color, handedness, local, userId }) {
       {hands && local && (
         <Axes model={handModelRef.current?.motionController} />
       )}
+      {local && (
+        <>
+          <JointManager
+            target={target}
+            handModelRef={handModelRef}
+            handedness={handedness}
+          />
+        </>
+      )}
+      {((handedness === "right" && local) || fakeLocal) && (
+        <group name={`hand-collision-body-${handedness}`}>
+          <HandCollisionBody
+            handModelRef={handModelRef}
+            handedness={handedness}
+          />
+        </group>
+      )}
     </>
   );
 }
+
+// Hand.whyDidYouRender = true;

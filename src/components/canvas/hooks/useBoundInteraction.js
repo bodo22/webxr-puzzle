@@ -27,10 +27,10 @@ export function useIsInBoundary(type = "z-0-plane") {
       if (singlePlayer) {
         return inBoundary;
       }
-      if (["VR", "VR1"].includes(userIdSelf) && position.z > 0.15) {
+      if (["VR", "VR2"].includes(userIdSelf) && position.z > 0.15) {
         inBoundary = false;
       }
-      if (["AR", "VR2"].includes(userIdSelf) && position.z < -0.15) {
+      if (["AR", "VR1"].includes(userIdSelf) && position.z < -0.15) {
         inBoundary = false;
       }
       return inBoundary;
@@ -46,10 +46,10 @@ export function useIsInBoundary(type = "z-0-plane") {
   return isInBoundary;
 }
 
-export function useBoundingBoxProps(pizzaPositions) {
+export function useBoundingBoxProps() {
   const { pizzaRadius } = useDebug();
   const { color } = useUser();
-  const playerTransform = usePlayerTransform({ pizzaPositions });
+  const playerTransform = usePlayerTransform();
 
   const boxProps = {
     args: [10, 10, pizzaRadius * 2],
@@ -67,7 +67,7 @@ const initialState = {
   boxRef: undefined,
 };
 
-const mutations = (set, get) => {
+const mutations = (set) => {
   return {
     setBoxRef(boxRef) {
       set({ boxRef });

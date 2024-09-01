@@ -1,10 +1,18 @@
 import React from "react";
-import { Cylinder, Gltf, QuadraticBezierLine } from "@react-three/drei";
-import { formatRgb } from "culori";
+import {
+  // Cylinder,
+  QuadraticBezierLine,
+  useGLTF,
+} from "@react-three/drei";
 import Pinch from "./Pinch";
+import Bvh from "./physics/Bvh";
 import ShowWorldPosition from "./debug/ShowWorldPosition";
-import useIsColliding from "./hooks/useIsColliding";
-import useSocket, { useDebug } from "@/stores/socket";
+import { useDebug } from "@/stores/socket";
+import { simplifiedHOH } from "@/utils/index";
+
+simplifiedHOH.forEach((name) => {
+  useGLTF.preload(`models/simplified/glbs/aligned/z-toward-user/${name}.glb`);
+});
 
 // https://github.com/pmndrs/drei#gltf
 export default function GenericGltf({
@@ -15,60 +23,56 @@ export default function GenericGltf({
   ...props
 }) {
   const ref = React.useRef();
-  const pieceRef = React.useRef();
   const goalRef = React.useRef();
-  const isColliding = useIsColliding(ref);
-  const { pieces: debugPieces } = useDebug();
-  const src = debugPieces ? gltfPathDebug : gltfPath;
-  const userIdSelf = useSocket((state) => state.userId);
+  const { pieces: debugPieces, showBvhs } = useDebug();
+  const src = gltfPath;
 
   const goalReached = props.success && !props.trash;
-  const color = goalReached ? "green" : formatRgb(props.color);
 
-  React.useEffect(() => {
-    const piece = pieceRef.current;
-    piece.traverse((node) => {
-      if (node.material) {
-        node.material.metalness = 0;
-        node.material.color.set(color);
-      }
-    });
-  }, [color]);
-
-  // props.scale = .1
-
-  const spectatorAndNotTrash = userIdSelf === "spectator" && !props.trash;
-  // goal is not trash and (goal is on this side (self or other sides give))
-  const self =
-    userIdSelf === props.env ||
-    (props.env === "VR" && userIdSelf === "VR1") ||
-    (props.env === "AR" && userIdSelf === "VR2");
-  const showGoalPlatform =
-    !props.trash &&
-    ((props.type === "self" && self) || (props.type === "give" && !self));
-
-  // if (props.trash) {
-  //   props.position = [0, -0.38, 0];
-  // }
+  const gltf = useGLTF(src);
+  let mesh;
+  gltf.scene.traverse((node) => {
+    if (node.isMesh) {
+      mesh = node;
+      mesh.name = `${props.name}-mesh`;
+    }
+  });
+  let meshWithBvh;
+  const cloned = React.useMemo(() => gltf.scene.clone(), [gltf.scene]);
+  cloned.traverse((node) => {
+    if (node.isMesh) {
+      meshWithBvh = node;
+      meshWithBvh.name = `${props.name}-meshWithBvh`;
+      meshWithBvh.material = meshWithBvh.material.clone();
+      meshWithBvh.material.color.set("red");
+    }
+  });
 
   return (
     <>
       <Pinch
-        isColliding={isColliding}
         ref={ref}
+        mesh={mesh}
         {...props}
+        userData={{
+          origProps: props,
+        }}
         goalReached={goalReached}
         ignore={goalReached || ignorePinch}
+        // visible={false}
       >
         <ShowWorldPosition
           target={ref}
           text={props.pinchStart ?? props.pinchStart}
         />
         <ShowWorldPosition target={goalRef} />
-        <Gltf src={src} ref={pieceRef} /* visible={!props.trashed} */ />
-        {/* https://github.com/pmndrs/drei#quadraticbezierline */}
+        <primitive object={gltf.scene} />
+        {/* <axesHelper args={[200]} /> */}
       </Pinch>
-      {(spectatorAndNotTrash || showGoalPlatform) && (
+      <group {...props} name={`${props.name}-bvh-parent`} visible={!!showBvhs}>
+        <primitive object={meshWithBvh} />
+      </group>
+      {/* {(spectatorAndNotTrash || showGoalPlatform) && (
         <group
           position={props.positionGoal}
           scale={props.scaleGoal ?? props.scale}
@@ -79,7 +83,7 @@ export default function GenericGltf({
             </Cylinder>
           </group>
         </group>
-      )}
+      )} */}
       {/* {!props.trash && (
       <group position={props.positionGoal} scale={props.scale * 1.4}>
           <Cylinder args={[1, 1, 0.1, 30]} ref={goalRef}>
@@ -87,6 +91,7 @@ export default function GenericGltf({
           </Cylinder>
         </group>
       )} */}
+      {/* https://github.com/pmndrs/drei#quadraticbezierline */}
       {debugPieces && (
         <QuadraticBezierLine
           start={props.position}
@@ -97,6 +102,7 @@ export default function GenericGltf({
           lineWidth={2} // In pixels (default)
         />
       )}
+      <Bvh mesh={meshWithBvh} />
     </>
   );
 }

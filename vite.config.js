@@ -16,7 +16,7 @@ const addLocalIpLog = () => {
       const { printUrls } = server;
       server.printUrls = () => {
         const ip = ipUtil.address().replaceAll(".", "-");
-        const validHttpsCertDomain = `https://${ip}.my.${hostname}:${port}/`
+        const validHttpsCertDomain = `https://${ip}.my.${hostname}:${port}/`;
         server.resolvedUrls["network"].push(
           validHttpsCertDomain,
           // `https://${ip}.${hostname}:${port}/`
@@ -47,6 +47,18 @@ const watchNodeModules = () => {
     },
   };
 };
+
+function modifyDateHeader() {
+  return {
+    name: "modify-date-header",
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        res.setHeader("Date-now", Date.now());
+        next();
+      });
+    },
+  };
+}
 
 async function getFile(path) {
   return new Promise((resolve) => {
@@ -94,6 +106,7 @@ export default defineConfig(async () => {
       jsconfigPaths(),
       addLocalIpLog(),
       watchNodeModules(),
+      modifyDateHeader(),
     ],
     server: {
       port,

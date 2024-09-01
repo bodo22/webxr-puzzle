@@ -1,34 +1,22 @@
 import React from "react";
-// import { Select } from "@react-three/postprocessing";
-import { Gltf, Stars, Sparkles } from "@react-three/drei";
+import { Stars, Sparkles } from "@react-three/drei";
 import useSound from "use-sound";
 import useSocket, { useUsers, useLog } from "@/stores/socket";
 import RemoteHands from "./RemoteHands";
+import RemoteViewers from "./RemoteViewers";
 import GenericGltf from "@/components/canvas/GenericGltf";
-// import { useIsObjectPinched } from "@/stores/interacting";
-import usePlayerTransform from "../hooks/usePlayerTransform";
-// import RemoteControllers from "./RemoteControllers";
-// import Crate from "@/components/canvas/Crate";
-// import LiverArteries from "@/components/canvas/LiverArteries";
 
 import successSfx from "@/assets/sounds/success.mp3";
 import { useXREvent } from "@react-three/xr";
-// import failSfx from "@/assets/sounds/fail.mp3";
-
-const pieceComponentMapping = {
-  // "my-fun-test-LiverArteries": LiverArteries,
-  // "my-fun-test-crate": Crate,
-};
+import Questions from "../Questions";
 
 function RemoteTarget({ target }) {
   return <primitive object={target} />;
 }
 
-function RemoteXRControllers({ targets, pizzaPositions, index, userId }) {
-  const groupProps = usePlayerTransform({ index, pizzaPositions, userId });
-
+function RemoteXRControllers({ targets, userId }) {
   return (
-    <group {...groupProps}>
+    <group>
       {targets?.map((target) => {
         const { handedness } = target;
         return (
@@ -39,37 +27,21 @@ function RemoteXRControllers({ targets, pizzaPositions, index, userId }) {
   );
 }
 function SelectablePuzzlePiece(props) {
-  // const isPinched = !!useIsObjectPinched(props.name);
-  const MappedComponent = pieceComponentMapping[props.name];
-  let component;
-
-  if (MappedComponent === undefined) {
-    component = <GenericGltf key={props.name} {...props} />;
-  } else {
-    component = <MappedComponent key={props.name} {...props} />;
-  }
-  return (
-    <>
-      {/* <Select enabled={isPinched}> */}
-      {component}
-      {/* </Select> */}
-    </>
-  );
+  return <GenericGltf key={props.name} {...props} />;
 }
 
-const positionTrash = [0, -0.45, 0];
+const positionTrash = [0, -10.45, 0];
 
-export default function RemoteHandsAndControllers({ pizzaPositions }) {
+const defaultTableHeight = 10;
+
+export default function RemoteHandsAndControllers() {
+  const [tableY, setTableY] = React.useState(defaultTableHeight);
   const controllers = useSocket((state) => state.controllers);
-  // let pieces = useSocket((state) => state.pieces);
-  const pieces = useSocket((state) => state.pieces);
+  const origPieces = useSocket((state) => state.pieces);
+  let pieces = origPieces;
   const users = useUsers();
   const [playSuccess] = useSound(successSfx);
   const log = useLog();
-  // const plateRef = React.useRef();
-  const trashRef = React.useRef();
-
-  // pieces = pieces.map((d) => ({...d, success: true}));
 
   const levelSuccess =
     pieces.length && pieces.every(({ success }) => success === true);
@@ -110,21 +82,10 @@ export default function RemoteHandsAndControllers({ pizzaPositions }) {
               positionGoal={positionGoal}
               positionTrash={positionTrash}
               ignorePinch={levelSuccess}
+              // position={[props.position[0], tableY + .2, props.position[2]]}
             />
           );
         })}
-      {/* <Gltf
-        src="models/pieces/plate.glb"
-        ref={plateRef}
-        scale={0.0025}
-        position={[0.125, -0.35, 0]}
-      /> */}
-      <Gltf
-        src="models/pieces/1-trash.glb"
-        ref={trashRef}
-        scale={0.001}
-        position={positionTrash}
-      />
       {levelSuccess ? (
         <>
           <Stars
@@ -137,6 +98,7 @@ export default function RemoteHandsAndControllers({ pizzaPositions }) {
             speed={1}
           />
           <Sparkles />
+          <Questions />
         </>
       ) : null}
       {users
@@ -147,14 +109,18 @@ export default function RemoteHandsAndControllers({ pizzaPositions }) {
               key={`${userId}-xr`}
               targets={targets}
               userId={userId}
-              pizzaPositions={pizzaPositions}
               index={index}
             />
           );
         })
         .flat()}
-      {/* <RemoteControllers controllers={controllers} /> */}
-      <RemoteHands />
+      <RemoteHands visible={!levelSuccess} />
+      <RemoteViewers
+        levelSuccess={levelSuccess}
+        tableY={tableY}
+        setTableY={setTableY}
+        defaultTableHeight={defaultTableHeight}
+      />
     </>
   );
 }

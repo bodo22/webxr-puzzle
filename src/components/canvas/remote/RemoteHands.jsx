@@ -2,7 +2,35 @@ import React from "react";
 import { fakeInputSourceFactory } from "@/utils";
 import useSocket, { useUsers } from "@/stores/socket";
 import Hand from "../Hand";
-export default function RemoteHands() {
+import { useFrame } from "@react-three/fiber";
+
+function HandPair({ targets, index, userId, color, visible = true }) {
+  useFrame(() => {
+    targets.forEach((t) => {
+      t.hand.visible = visible;
+    });
+  });
+
+  return (
+    <group>
+      {targets.map((target) => {
+        return (
+          <Hand
+            index={index}
+            userId={userId}
+            key={`${userId}-${target.handedness}-hand`}
+            color={color}
+            target={target}
+            handedness={target.handedness}
+            // local
+          />
+        );
+      })}
+    </group>
+  );
+}
+
+export default function RemoteHands(props) {
   const users = useUsers();
   const controllers = useSocket((state) => state.controllers);
 
@@ -28,22 +56,19 @@ export default function RemoteHands() {
       if (!targets) {
         return null;
       }
-      return targets.map((target) => {
-        return (
-          <Hand
-            index={index}
-            userId={userId}
-            key={`${userId}-${target.handedness}-hand`}
-            color={color}
-            target={target}
-            handedness={target.handedness}
-            // local
-          />
-        );
-      });
+      return (
+        <HandPair
+          {...props}
+          targets={targets}
+          userId={userId}
+          color={color}
+          index={index}
+          key={`${userId}-hand-pair`}
+        />
+      );
     })
     .flat();
   // when changing seat positions via admin interface with this flat()
   // the hands are disposed for some reason. maybe a r3f bug
-  // TODO: investigate further (but just for fun)
+  // TODO: investigate further (not mission critical, for fun)
 }
