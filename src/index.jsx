@@ -41,7 +41,7 @@ function useMoveCamera() {
   const xrManager = useThree((state) => state.gl.xr);
   const userIdSelf = useSocket((state) => state.userId);
   React.useEffect(() => {
-    // handle reset event with cleanup
+    // handle recenter event with cleanup
     function handleReset(userId) {
       if (userId !== userIdSelf) {
         return;
